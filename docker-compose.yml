@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/workspace
+      # Evita que se sobreescriba el venv local de Linux con el de Windows si existe
+      - /workspace/venv
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/workspace
+      # Evitar que se sobreescriba node_modules del contenedor
+      - /workspace/node_modules
+      - /workspace/.next
+    environment:
+      - WATCHPACK_POLLING=true # Asegura que funcione el hot-reload en volúmenes Docker
+    depends_on:
+      - backend
+    restart: always
