@@ -14,4 +14,3 @@ class JudicialFileAnalysis(BaseModel):
     summary: str = Field(description="Resumen narrativo conciso y claro de los hechos descritos en el expediente.")
     entities: List[Entity] = Field(description="Lista de todas las personas u organizaciones involucradas identificadas en el texto.")
     key_points: List[str] = Field(description="Puntos o acontecimientos clave ordenados de manera relevante.")
-    suggested_steps: List[str] = Field(description="Pasos o recomendaciones sugeridas para el análisis del caso por parte del tribunal.")

@@ -27,10 +27,6 @@ def get_mock_analysis() -> JudicialFileAnalysis:
             "Ocurrencia del hecho punible en fecha 2026-05-10.",
             "Detención en flagrancia del ciudadano Juan Pérez.",
             "Presentación de la acusación formal por parte del Ministerio Público."
-        ],
-        suggested_steps=[
-            "Verificar si el imputado cuenta con antecedentes penales.",
-            "Solicitar ampliación del informe médico forense de la víctima."
         ]
     )
 
@@ -102,3 +98,42 @@ def extract_judicial_data(text: str, is_multimodal: bool = False, file_bytes: by
         mock = get_mock_analysis()
         mock.summary = f"Error al procesar con la IA: {str(e)}. Mostrando datos de prueba."
         return mock
+
+def extract_text_via_gemini(file_bytes: bytes, filename: str) -> str:
+    """Usa la API multimodal de Gemini para transcribir el texto completo de un documento (imagen o PDF)."""
+    if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "your_gemini_api_key_here":
+        return "Modo Demostración (IA Desactivada): Configura la API key de Gemini para transcribir con IA."
+
+    try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel("gemini-3.5-flash")
+        
+        ext = filename.split(".")[-1].lower()
+        prompt = (
+            "Transcribe con la máxima precisión posible todo el texto de este documento judicial en español. "
+            "Respeta la estructura del texto, los títulos, saltos de línea y numeraciones. "
+            "Si hay firmas, sellos o superposiciones, ignora los elementos no textuales pero transcribe el texto "
+            "completo de forma literal, incluyendo números de expediente, nombres de los involucrados, cargos y fechas. "
+            "No agregues interpretaciones, resúmenes ni comentarios."
+        )
+
+        if ext in ["jpg", "jpeg", "png", "webp"]:
+            image = Image.open(BytesIO(file_bytes))
+            response = model.generate_content(contents=[prompt, image])
+            return response.text.strip()
+        elif ext == "pdf":
+            pdf_part = {
+                "mime_type": "application/pdf",
+                "data": file_bytes
+            }
+            response = model.generate_content(contents=[prompt, pdf_part])
+            return response.text.strip()
+        else:
+            try:
+                return file_bytes.decode("utf-8")
+            except Exception:
+                return ""
+    except Exception as e:
+        print(f"Error al transcribir con Gemini: {e}")
+        return f"Error en la transcripción con Gemini: {str(e)}"
+
