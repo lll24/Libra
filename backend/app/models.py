@@ -5,6 +5,7 @@ class Entity(BaseModel):
     name: str = Field(description="Nombre completo de la persona u organización.")
     role: str = Field(description="Rol específico en el caso: 'víctima', 'agresor', 'demandante', 'demandado', 'abogado_defensor', 'abogado_acusador', 'juez', 'testigo', o 'otro'.")
     context: Optional[str] = Field(description="Breve descripción o contexto de su participación en el expediente.")
+    cedula: Optional[str] = Field(description="Cédula de identidad (ID) de la persona, si está mencionada en el documento.")
 
 class JudicialFileAnalysis(BaseModel):
     case_number: Optional[str] = Field(description="Número del expediente judicial, si está disponible.")
