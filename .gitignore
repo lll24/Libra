@@ -6,7 +6,6 @@ env/
 
 # Variables de entorno y llaves secretas (¡MUY IMPORTANTE!)
 .env
-.env.*
 secrets.json
 
 # Cache de Python

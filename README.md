@@ -43,12 +43,13 @@ Solo necesitas tener instalado:
 
 Para proteger tus credenciales, el archivo de configuración sensible está protegido y **nunca se subirá a GitHub** gracias al archivo `.gitignore`.
 
-1. Duplica o edita el archivo `backend/.env`.
-2. Introduce tu clave de API de Gemini:
+1. En la carpeta `backend`, duplica el archivo `.env.example` y cámbiale el nombre a `.env` (o ejecuta `cp backend/.env.example backend/.env` en sistemas basados en Unix o `copy backend\.env.example backend\.env` en Windows).
+2. Abre `backend/.env` e introduce tu clave de API de Gemini y las configuraciones correspondientes:
    ```env
    GEMINI_API_KEY=tu_api_key_aqui
+   DATABASE_URL=postgresql://libra_user:libra_password@db:5432/libra_db
    ```
-   *(Si no posees una clave de API, puedes obtenerla gratis en [Google AI Studio](https://aistudio.google.com/). Si dejas el campo vacío, el sistema cargará en modo de demostración con datos de prueba).*
+   *(Si no posees una clave de API, puedes obtenerla gratis en [Google AI Studio](https://aistudio.google.com/).)*
 
 ---
 
