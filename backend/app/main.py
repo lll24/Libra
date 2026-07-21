@@ -391,7 +391,8 @@ def get_document_analysis(id: str):
                 cur.execute("SELECT name, role, context, cedula FROM entities WHERE document_id = %s;", (id,))
                 entities = cur.fetchall()
                 
-            conn.close()
+            from app.database import release_connection
+            release_connection(conn)
             return {
                 "case_number": doc.get("case_number"),
                 "court_name": doc.get("court_name"),

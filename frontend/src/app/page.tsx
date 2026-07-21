@@ -23,7 +23,15 @@ interface ChatMessage {
   text: string;
 }
 
+const getBackendUrl = () => {
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:8000`;
+  }
+  return "http://localhost:8000";
+};
+
 export default function Home() {
+  const BACKEND_URL = getBackendUrl();
   // Configuración del flujo de trabajo: 'upload' | 'ocr_edit' | 'analyzed'
   const [currentStep, setCurrentStep] = useState<"upload" | "ocr_edit" | "analyzed">("upload");
   const [ocrMode, setOcrMode] = useState<"local" | "ai">("ai");
@@ -123,7 +131,7 @@ export default function Home() {
     formData.append("mode", ocrMode);
 
     try {
-      const response = await fetch("http://localhost:8000/api/ocr", {
+      const response = await fetch(`${BACKEND_URL}/api/ocr`, {
         method: "POST",
         body: formData,
       });
@@ -149,7 +157,7 @@ export default function Home() {
       setImageZoom(1);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "No se pudo conectar con el servidor backend en http://localhost:8000");
+      setError(err.message || `No se pudo conectar con el servidor backend en ${BACKEND_URL}`);
     } finally {
       setIsProcessingOcr(false);
     }
@@ -159,7 +167,7 @@ export default function Home() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:8000/api/analyze-text", {
+      const response = await fetch(`${BACKEND_URL}/api/analyze-text`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +205,7 @@ export default function Home() {
       // Guardar cualquier cambio realizado en la revisión
       if (archiveId) {
         try {
-          await fetch(`http://localhost:8000/api/archive/${archiveId}/text`, {
+          await fetch(`${BACKEND_URL}/api/archive/${archiveId}/text`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: rawText }),
@@ -207,7 +215,7 @@ export default function Home() {
         }
       }
 
-      const response = await fetch("http://localhost:8000/api/analyze-text", {
+      const response = await fetch(`${BACKEND_URL}/api/analyze-text`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +257,7 @@ export default function Home() {
     setIsChatSending(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/chat-query", {
+      const response = await fetch(`${BACKEND_URL}/api/chat-query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -277,7 +285,7 @@ export default function Home() {
   // Funciones de Roles, Incidentes y Búsqueda
   const validateDocumentDirectly = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/documents/${id}/validate`, {
+      const response = await fetch(`${BACKEND_URL}/api/documents/${id}/validate`, {
         method: "POST",
       });
       if (!response.ok) throw new Error("Error al validar el documento");
@@ -294,7 +302,7 @@ export default function Home() {
   const submitIncident = async (id: string, note: string) => {
     if (!note.trim()) return;
     try {
-      const response = await fetch(`http://localhost:8000/api/incidents`, {
+      const response = await fetch(`${BACKEND_URL}/api/incidents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ document_id: id, note }),
@@ -304,6 +312,7 @@ export default function Home() {
       setShowIncidentModal(false);
       setIncidentNote("");
       fetchArchiveList();
+      fetchIncidents();
       if (selectedArchiveItem && selectedArchiveItem.id === id) {
         setSelectedArchiveItem((prev: any) => prev ? { ...prev, status: 'incident' } : null);
       }
@@ -314,7 +323,7 @@ export default function Home() {
 
   const fetchIncidents = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/incidents");
+      const response = await fetch(`${BACKEND_URL}/api/incidents`);
       if (!response.ok) throw new Error("Error al cargar incidentes");
       const data = await response.json();
       setIncidentsList(data);
@@ -325,7 +334,7 @@ export default function Home() {
 
   const handleResolveIncident = async (incidentId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/incidents/${incidentId}/resolve`, {
+      const response = await fetch(`${BACKEND_URL}/api/incidents/${incidentId}/resolve`, {
         method: "POST",
       });
       if (!response.ok) throw new Error("Error al resolver incidente");
@@ -342,7 +351,7 @@ export default function Home() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/api/archive/${archiveId}/text`, {
+      const response = await fetch(`${BACKEND_URL}/api/archive/${archiveId}/text`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: rawText }),
@@ -360,7 +369,7 @@ export default function Home() {
   const searchCausas = async (query: string) => {
     setIsSearchingCausas(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${BACKEND_URL}/api/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error("Error al buscar causas");
       const data = await response.json();
       setSearchResults(data);
@@ -401,7 +410,7 @@ export default function Home() {
     setIsLoadingArchive(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:8000/api/archive");
+      const response = await fetch(`${BACKEND_URL}/api/archive`);
       if (!response.ok) throw new Error("Error al obtener la lista del archivero.");
       const data = await response.json();
       setArchiveList(data);
@@ -420,7 +429,7 @@ export default function Home() {
     setError(null);
     setImageZoom(1);
     try {
-      const response = await fetch(`http://localhost:8000/api/archive/${item.id}/text`);
+      const response = await fetch(`${BACKEND_URL}/api/archive/${item.id}/text`);
       if (!response.ok) throw new Error("No se pudo cargar el texto del archivo.");
       const data = await response.json();
       setArchiveItemText(data.text);
@@ -436,7 +445,7 @@ export default function Home() {
     setIsUpdatingArchiveText(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/api/archive/${selectedArchiveItem.id}/text`, {
+      const response = await fetch(`${BACKEND_URL}/api/archive/${selectedArchiveItem.id}/text`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: archiveItemText }),
@@ -458,14 +467,14 @@ export default function Home() {
     setImageZoom(1);
     try {
       // Guardar cualquier cambio de texto primero
-      await fetch(`http://localhost:8000/api/archive/${selectedArchiveItem.id}/text`, {
+      await fetch(`${BACKEND_URL}/api/archive/${selectedArchiveItem.id}/text`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: archiveItemText }),
       });
 
       // Ejecutar el análisis
-      const response = await fetch("http://localhost:8000/api/analyze-text", {
+      const response = await fetch(`${BACKEND_URL}/api/analyze-text`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: archiveItemText, id: selectedArchiveItem.id }),
@@ -554,7 +563,7 @@ export default function Home() {
 
       {/* Header */}
       <header className="border-b border-slate-800/60 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[96%] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[96%] mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">
               Δ
@@ -566,7 +575,7 @@ export default function Home() {
               <p className="text-[10px] text-slate-400 tracking-wider uppercase font-semibold">Tribunal Supremo de Justicia</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
             {/* Selector de Rol */}
             <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 rounded-lg p-1 mr-2">
               <span className="text-[9px] text-slate-500 font-bold px-1.5 uppercase">Rol:</span>
@@ -587,11 +596,11 @@ export default function Home() {
                   }
                   setError(null);
                 }}
-                className="bg-slate-950 text-xs text-slate-300 font-medium border border-slate-850 rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
+                className="bg-slate-950 text-xs text-slate-300 font-medium border border-slate-800 rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
               >
-                <option value="digital_secretary">✍️ Secr. Digital</option>
-                <option value="court_secretary">🕵️‍♀️ Secr. Tribunal</option>
-                <option value="reader_user">📖 Abogado Lector</option>
+                <option value="digital_secretary" className="bg-slate-900 text-white">✍️ Secr. Digital</option>
+                <option value="court_secretary" className="bg-slate-900 text-white">🕵️‍♀️ Secr. Tribunal</option>
+                <option value="reader_user" className="bg-slate-900 text-white">📖 Abogado Lector</option>
               </select>
             </div>
 
@@ -1320,8 +1329,9 @@ export default function Home() {
                                 selectArchiveItem({
                                   id: inc.document_id,
                                   filename: inc.filename,
-                                  file_url: `http://localhost:8000/api/files/${inc.document_id}`,
-                                  size: 0
+                                  file_url: `${BACKEND_URL}/api/files/${inc.document_id}`,
+                                  size: 0,
+                                  status: 'incident'
                                 });
                               }}
                               className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
@@ -1528,7 +1538,7 @@ export default function Home() {
                       onClick={async () => {
                         setSelectedCausa(causa);
                         setRawText(causa.content);
-                        setFileUrl(causa.file_url || `http://localhost:8000/api/files/${causa.id}`);
+                        setFileUrl(causa.file_url || `${BACKEND_URL}/api/files/${causa.id}`);
                         setFile({
                           name: causa.filename,
                           size: 0,
@@ -1537,7 +1547,7 @@ export default function Home() {
                         setShowChatbot(false);
                         setSearchAnalysisResult(null);
                         try {
-                          const res = await fetch(`http://localhost:8000/api/documents/${causa.id}/analysis`);
+                          const res = await fetch(`${BACKEND_URL}/api/documents/${causa.id}/analysis`);
                           if (res.ok) {
                             const data = await res.json();
                             setSearchAnalysisResult(data);
@@ -1573,13 +1583,13 @@ export default function Home() {
                           <div className="flex-grow border border-slate-800 bg-slate-950/60 rounded-xl overflow-auto flex items-start justify-center relative">
                             {selectedCausa.filename.toLowerCase().endsWith(".pdf") ? (
                               <iframe
-                                src={getPdfUrl(`http://localhost:8000/api/files/${selectedCausa.id}`)}
+                                src={getPdfUrl(`${BACKEND_URL}/api/files/${selectedCausa.id}`)}
                                 className="w-full h-full border-none"
                                 title="Visor PDF Causa"
                               />
                             ) : (
                               <img
-                                src={`http://localhost:8000/api/files/${selectedCausa.id}`}
+                                src={`${BACKEND_URL}/api/files/${selectedCausa.id}`}
                                 alt="Visualización de causa"
                                 className="object-contain p-2 w-full h-full"
                               />

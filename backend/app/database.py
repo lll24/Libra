@@ -2,21 +2,40 @@ import os
 import time
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.pool import ThreadedConnectionPool
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://libra_user:libra_password@db:5432/libra_db")
 
+# Pool de conexiones global (mínimo 1 conexión, máximo 10)
+db_pool = None
+
 def get_connection():
-    """Retorna una conexión a la base de datos PostgreSQL con reintentos."""
-    retries = 10
-    while retries > 0:
+    """Retorna una conexión a la base de datos PostgreSQL desde el pool con reintentos."""
+    global db_pool
+    if db_pool is None:
+        retries = 10
+        while retries > 0:
+            try:
+                db_pool = ThreadedConnectionPool(1, 10, dsn=DATABASE_URL)
+                print("Pool de conexiones de base de datos PostgreSQL inicializado (mínimo: 1, máximo: 10)")
+                break
+            except psycopg2.OperationalError as e:
+                print(f"Esperando a la base de datos PostgreSQL... {retries} reintentos restantes. Error: {e}")
+                retries -= 1
+                time.sleep(2)
+        if db_pool is None:
+            raise Exception("No se pudo conectar a la base de datos PostgreSQL")
+            
+    return db_pool.getconn()
+
+def release_connection(conn):
+    """Devuelve la conexión al pool en lugar de cerrarla físicamente."""
+    global db_pool
+    if db_pool and conn:
         try:
-            conn = psycopg2.connect(DATABASE_URL)
-            return conn
-        except psycopg2.OperationalError as e:
-            print(f"Esperando a la base de datos PostgreSQL... {retries} reintentos restantes. Error: {e}")
-            retries -= 1
-            time.sleep(2)
-    raise Exception("No se pudo conectar a la base de datos PostgreSQL")
+            db_pool.putconn(conn)
+        except Exception as e:
+            print(f"Error al devolver conexión al pool: {e}")
 
 def init_db():
     """Inicializa el esquema de base de datos creando las tablas necesarias."""
@@ -65,7 +84,7 @@ def init_db():
         print(f"Error al inicializar la base de datos: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def save_document(doc_id, filename, content, case_number=None, court_name=None, date=None, crime_or_subject=None, summary=None, status='draft'):
     """Guarda o actualiza un documento en la base de datos."""
@@ -90,7 +109,7 @@ def save_document(doc_id, filename, content, case_number=None, court_name=None, 
         print(f"Error al guardar documento {doc_id}: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def save_entities(doc_id, entities_list):
     """Guarda las entidades asociadas a un documento, eliminando las previas para evitar duplicados."""
@@ -116,7 +135,7 @@ def save_entities(doc_id, entities_list):
         print(f"Error al guardar entidades para {doc_id}: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def update_document_status(doc_id, status):
     """Actualiza el estado de un expediente."""
@@ -130,7 +149,7 @@ def update_document_status(doc_id, status):
         print(f"Error al actualizar estado de {doc_id}: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def report_incident(doc_id, note):
     """Reporta un incidente para un documento y cambia su estado a 'incident'."""
@@ -150,7 +169,7 @@ def report_incident(doc_id, note):
         print(f"Error al reportar incidente para {doc_id}: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def resolve_incident(incident_id):
     """Resuelve un incidente y regresa el estado del documento a 'validated'."""
@@ -172,7 +191,7 @@ def resolve_incident(incident_id):
         print(f"Error al resolver incidente {incident_id}: {e}")
         raise e
     finally:
-        conn.close()
+        release_connection(conn)
 
 def get_incidents():
     """Obtiene el listado de incidentes abiertos con datos del expediente asociado."""
@@ -191,7 +210,7 @@ def get_incidents():
         print(f"Error al obtener incidentes: {e}")
         return []
     finally:
-        conn.close()
+        release_connection(conn)
 
 def search_documents(query_str):
     """
@@ -232,4 +251,4 @@ def search_documents(query_str):
         print(f"Error en búsqueda de causas: {e}")
         return []
     finally:
-        conn.close()
+        release_connection(conn)
