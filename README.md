@@ -1,6 +1,6 @@
 # Libra ⚖️ - Analizador de Expedientes Judiciales con IA y OCR Local
 
-**Libra** es un sistema inteligente diseñado para el **Tribunal Supremo de Justicia** que permite escanear, digitalizar, revisar y estructurar expedientes judiciales (en formatos PDF, Word e imágenes) utilizando **Inteligencia Artificial (Gemini 3.5 Flash)** y **OCR local (Tesseract)**.
+**Libra** es un sistema inteligente diseñado para el **Tribunal Supremo de Justicia** que permite escanear, digitalizar, revisar y estructurar expedientes judiciales (en formatos PDF, Word e imágenes) utilizando **Inteligencia Artificial (Gemini 3.5 Flash Lite)** y **OCR local (Tesseract)**.
 
 El sistema está completamente contenedorizado con **Docker** para asegurar que funcione de manera aislada y rápida en cualquier computadora sin necesidad de instalar dependencias complejas localmente.
 
@@ -27,7 +27,7 @@ El sistema está completamente contenedorizado con **Docker** para asegurar que 
 * **Frontend:** Next.js (React + TypeScript + Tailwind CSS)
 * **Backend:** FastAPI (Python 3.12)
 * **Motor de OCR:** Tesseract OCR (con soporte en Español)
-* **Inteligencia Artificial:** Google Gemini 3.5 Flash (API)
+* **Inteligencia Artificial:** Google Gemini 3.5 Flash Lite (API)
 * **Orquestación:** Docker & Docker Compose
 
 ---

@@ -39,7 +39,7 @@ def extract_judicial_data(text: str, is_multimodal: bool = False, file_bytes: by
         return get_mock_analysis()
 
     try:
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash-lite")
         
         prompt = (
             "Eres un experto asistente legal para el Tribunal Supremo de Justicia. "
@@ -106,7 +106,7 @@ def extract_text_via_gemini(file_bytes: bytes, filename: str) -> str:
 
     try:
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash-lite")
         
         ext = filename.split(".")[-1].lower()
         prompt = (

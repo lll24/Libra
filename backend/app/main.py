@@ -304,7 +304,7 @@ def query_document(request: ChatQueryRequest):
             return ChatQueryResponse(answer="No hay información suficiente para responder a tu pregunta.")
         
         # Generar respuesta con Gemini con temperatura cercana a cero (temperature=0.0)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash-lite")
         
         print(f"DEBUG: Context size for Gemini: {len(context)} characters")
         print(f"DEBUG: Context sample: {context[:500]}")
