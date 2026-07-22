@@ -202,3 +202,66 @@ def process_uploaded_file(file_bytes: bytes, filename: str) -> str:
             return file_bytes.decode("utf-8")
         except Exception:
             return ""
+
+def get_pdf_page_count(file_bytes: bytes) -> int:
+    """Retorna el número de páginas del PDF usando pypdf."""
+    import pypdf
+    try:
+        reader = pypdf.PdfReader(BytesIO(file_bytes))
+        return len(reader.pages)
+    except Exception as e:
+        print(f"Error al contar páginas del PDF: {e}")
+        return 1
+
+def merge_pieza_pdfs(case_number: str, pieza_number: int) -> str:
+    """Fusiona todos los archivos PDF originales correspondientes a una pieza y un expediente en un único PDF."""
+    import pypdf
+    import os
+    from app.database import get_connection, release_connection
+    import psycopg2.extras
+    
+    ARCHIVE_DIR = "data/archive"
+    MERGED_DIR = "data/merged"
+    os.makedirs(MERGED_DIR, exist_ok=True)
+    
+    # Sanitizar case_number para usarlo de nombre de archivo seguro
+    safe_case = "".join(c for c in case_number if c.isalnum() or c in "._- ")
+    output_filename = f"{safe_case}_pieza_{pieza_number}.pdf"
+    output_path = os.path.join(MERGED_DIR, output_filename)
+    
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # Obtener documentos de este expediente y pieza ordenados por start_folio
+            cur.execute("""
+                SELECT id, filename 
+                FROM documents 
+                WHERE case_number = %s AND pieza_number = %s
+                ORDER BY start_folio ASC;
+            """, (case_number, pieza_number))
+            docs = cur.fetchall()
+            
+            if not docs:
+                print(f"No se encontraron documentos para {case_number} y pieza {pieza_number}")
+                return ""
+            
+            merger = pypdf.PdfMerger()
+            
+            for doc in docs:
+                file_path = os.path.join(ARCHIVE_DIR, doc["id"])
+                if os.path.exists(file_path):
+                    merger.append(file_path)
+                else:
+                    print(f"Advertencia: Archivo físico {file_path} no encontrado para fusionar")
+            
+            with open(output_path, "wb") as f_out:
+                merger.write(f_out)
+            
+            merger.close()
+            print(f"Pieza fusionada guardada en: {output_path}")
+            return output_path
+    except Exception as e:
+        print(f"Error al fusionar PDFs para expediente {case_number} pieza {pieza_number}: {e}")
+        return ""
+    finally:
+        release_connection(conn)

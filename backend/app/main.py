@@ -1,9 +1,10 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
-from app.services.document import process_uploaded_file
+from app.services.document import process_uploaded_file, get_pdf_page_count, merge_pieza_pdfs
 from app.services.extractor import extract_judicial_data, extract_text_via_gemini
 from app.models import JudicialFileAnalysis
 import google.generativeai as genai
@@ -47,7 +48,8 @@ class AnalyzeTextRequest(BaseModel):
     id: Optional[str] = None
 
 class ChatQueryRequest(BaseModel):
-    document_text: str
+    document_text: Optional[str] = None
+    case_number: Optional[str] = None
     question: str
 
 class ChatQueryResponse(BaseModel):
@@ -96,6 +98,11 @@ async def ocr_file(file: UploadFile = File(...), mode: str = Form("local")):
                     "cached": True
                 }
         
+        # Contar páginas del PDF
+        page_count = 1
+        if file.filename.lower().endswith(".pdf"):
+            page_count = get_pdf_page_count(file_bytes)
+            
         if mode == "ai":
             extracted_text = extract_text_via_gemini(file_bytes, file.filename)
         else:
@@ -126,7 +133,8 @@ async def ocr_file(file: UploadFile = File(...), mode: str = Form("local")):
                 doc_id=filename_id,
                 filename=file.filename,
                 content=extracted_text,
-                status='draft'
+                status='draft',
+                page_count=page_count
             )
         except Exception as db_err:
             print(f"Error al guardar borrador en DB: {db_err}")
@@ -140,7 +148,7 @@ async def ocr_file(file: UploadFile = File(...), mode: str = Form("local")):
         raise HTTPException(status_code=500, detail=f"Error en el procesamiento OCR: {str(e)}")
 
 @app.post("/api/analyze-text", response_model=JudicialFileAnalysis)
-def analyze_text(request: AnalyzeTextRequest):
+def analyze_text(request: AnalyzeTextRequest, background_tasks: BackgroundTasks):
     """
     Recibe el texto del expediente (ya corregido por el usuario) y lo estructura usando Gemini.
     """
@@ -161,7 +169,18 @@ def analyze_text(request: AnalyzeTextRequest):
                     with open(analysis_path, "r", encoding="utf-8") as f:
                         cached_data = json.load(f)
                     if cached_data.get("text_hash") == text_hash:
-                        return JudicialFileAnalysis(**cached_data["analysis"])
+                        # Si hay un case_number en la caché, realizar la asignación y fusión
+                        cached_analysis = cached_data["analysis"]
+                        case_no = cached_analysis.get("case_number")
+                        if case_no:
+                            try:
+                                from app.database import assign_document_folios
+                                pieza_no = assign_document_folios(request.id, case_no)
+                                background_tasks.add_task(merge_pieza_pdfs, case_no, pieza_no)
+                            except Exception as db_err:
+                                print(f"Error en la asignación de folios con caché: {db_err}")
+                                
+                        return JudicialFileAnalysis(**cached_analysis)
                 except Exception as cache_err:
                     print(f"Error al leer caché de análisis: {cache_err}")
         
@@ -188,6 +207,18 @@ def analyze_text(request: AnalyzeTextRequest):
                     summary=analysis_dict.get("summary")
                 )
                 save_entities(request.id, analysis_dict.get("entities", []))
+                
+                # Asignar folios y piezas secuencialmente y programar fusión
+                case_no = analysis_dict.get("case_number")
+                if case_no:
+                    from app.database import assign_document_folios
+                    pieza_no = assign_document_folios(request.id, case_no)
+                    background_tasks.add_task(merge_pieza_pdfs, case_no, pieza_no)
+                    
+                    # Indexar de inmediato para poder chatear sin esperar validación definitiva
+                    from app.services.rag import index_document_chunks
+                    background_tasks.add_task(index_document_chunks, request.id, request.text)
+                    
             except Exception as db_err:
                 print(f"Error al guardar análisis en DB: {db_err}")
 
@@ -211,7 +242,7 @@ def analyze_text(request: AnalyzeTextRequest):
 @app.post("/api/chat-query", response_model=ChatQueryResponse)
 def query_document(request: ChatQueryRequest):
     """
-    Responde una pregunta del usuario basada en el contenido del expediente judicial.
+    Responde una pregunta del usuario basada en el expediente judicial usando RAG (PGVector) si se provee case_number.
     """
     if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "your_gemini_api_key_here":
         return ChatQueryResponse(answer="[DEMO] Esta es una respuesta simulada de chat. Configura tu GEMINI_API_KEY para recibir respuestas reales de la IA.")
@@ -219,18 +250,80 @@ def query_document(request: ChatQueryRequest):
     try:
         # Configurar la API key
         genai.configure(api_key=settings.GEMINI_API_KEY)
+        
+        context = ""
+        print(f"DEBUG: chat-query payload case_number={request.case_number}")
+        print(f"DEBUG: chat-query payload question={request.question}")
+        
+        # Si se provee case_number, hacemos búsqueda semántica de los chunks
+        if request.case_number:
+            from app.services.rag import get_embedding
+            from app.database import search_relevant_chunks
+            
+            # 1. Generar embedding de la pregunta
+            query_vector = get_embedding(request.question, is_query=True)
+            
+            # 2. Buscar chunks relevantes
+            chunks = search_relevant_chunks(request.case_number, query_vector, limit=5)
+            print(f"DEBUG: Chunks found from pgvector: {len(chunks)}")
+            
+            if chunks:
+                context_parts = []
+                for c in chunks:
+                    context_parts.append(
+                        f"--- Fragmento de: {c['filename']} (Folios {c['start_folio']}-{c['end_folio']}) ---\n"
+                        f"{c['content']}"
+                    )
+                context = "\n\n".join(context_parts)
+            else:
+                # Fallback: Si no hay chunks en la base vectorial, cargamos todo el texto de los documentos del caso
+                try:
+                    from app.database import get_connection
+                    conn = get_connection()
+                    with conn.cursor() as cur:
+                        cur.execute("SELECT filename, content, start_folio, end_folio FROM documents WHERE case_number = %s;", (request.case_number,))
+                        rows = cur.fetchall()
+                        print(f"DEBUG: Fallback documents found: {len(rows)}")
+                        if rows:
+                            context_parts = []
+                            for row in rows:
+                                context_parts.append(
+                                    f"--- Documento: {row[0]} (Folios {row[2]}-{row[3]}) ---\n"
+                                    f"{row[1]}"
+                                )
+                            context = "\n\n".join(context_parts)
+                    conn.close()
+                except Exception as db_err:
+                    print(f"Error en fallback de chat-query: {db_err}")
+        
+        # Si no hay case_number o no se encontraron chunks/documentos, usar el texto plano de respaldo
+        if (not context or "No se encontraron" in context) and request.document_text:
+            context = request.document_text
+            
+        if not context:
+            return ChatQueryResponse(answer="No hay información suficiente para responder a tu pregunta.")
+        
+        # Generar respuesta con Gemini con temperatura cercana a cero (temperature=0.0)
         model = genai.GenerativeModel("gemini-3.5-flash")
         
+        print(f"DEBUG: Context size for Gemini: {len(context)} characters")
+        print(f"DEBUG: Context sample: {context[:500]}")
+        
         prompt = (
-            f"Basándote únicamente en el siguiente texto de un expediente judicial, responde a la pregunta de manera clara y precisa.\n\n"
-            f"--- TEXTO DEL EXPEDIENTE ---\n"
-            f"{request.document_text}\n"
+            f"Eres un asistente legal experto del Tribunal Supremo de Justicia.\n"
+            f"Tu tarea es ayudar al usuario respondiendo sus preguntas de forma clara y útil basándote en la información del expediente judicial provista en el contexto abajo.\n"
+            f"Deduce respuestas si es lógico y sé lo más servicial posible.\n\n"
+            f"--- CONTEXTO DEL EXPEDIENTE ---\n"
+            f"{context}\n"
             f"-----------------------------\n\n"
             f"Pregunta: {request.question}\n"
             f"Respuesta:"
         )
         
-        response = model.generate_content(prompt)
+        response = model.generate_content(
+            prompt,
+            generation_config={"temperature": 0.0}
+        )
         return ChatQueryResponse(answer=response.text)
 
     except Exception as e:
@@ -243,17 +336,19 @@ def list_archive():
         if not os.path.exists(ARCHIVE_DIR):
             return items
             
-        doc_statuses = {}
+        doc_meta = {}
         try:
             from app.database import get_connection
             conn = get_connection()
             with conn.cursor() as cur:
-                cur.execute("SELECT id, status FROM documents;")
+                cur.execute("SELECT id, status, case_number, court_name, date, crime_or_subject, summary, page_count, pieza_number, start_folio, end_folio FROM documents;")
+                columns = [desc[0] for desc in cur.description]
                 for row in cur.fetchall():
-                    doc_statuses[row[0]] = row[1]
+                    row_dict = dict(zip(columns, row))
+                    doc_meta[row_dict["id"]] = row_dict
             conn.close()
         except Exception as db_err:
-            print(f"Error al obtener estados de documentos de DB: {db_err}")
+            print(f"Error al obtener metadatos de documentos de DB: {db_err}")
             
         for name in sorted(os.listdir(ARCHIVE_DIR), reverse=True):
             if name.endswith(".txt") or name.endswith(".json"):
@@ -274,6 +369,7 @@ def list_archive():
                 timestamp = int(legacy_parts[0]) if legacy_parts[0].isdigit() else int(stat.st_mtime)
                 orig_filename = legacy_parts[1] if len(legacy_parts) > 1 else name
             
+            meta = doc_meta.get(name, {})
             items.append({
                 "id": name,
                 "filename": orig_filename,
@@ -281,7 +377,16 @@ def list_archive():
                 "size": stat.st_size,
                 "file_url": f"http://localhost:8000/api/files/{name}",
                 "has_text": os.path.exists(f"{file_path}.txt"),
-                "status": doc_statuses.get(name, "draft")
+                "status": meta.get("status", "draft"),
+                "case_number": meta.get("case_number"),
+                "court_name": meta.get("court_name"),
+                "date": meta.get("date"),
+                "crime_or_subject": meta.get("crime_or_subject"),
+                "summary": meta.get("summary"),
+                "page_count": meta.get("page_count", 1),
+                "pieza_number": meta.get("pieza_number"),
+                "start_folio": meta.get("start_folio"),
+                "end_folio": meta.get("end_folio")
             })
         return items
     except Exception as e:
@@ -327,11 +432,31 @@ class IncidentRequest(BaseModel):
     note: str
 
 @app.post("/api/documents/{id}/validate")
-def validate_document(id: str):
+def validate_document(id: str, background_tasks: BackgroundTasks):
     try:
         from app.database import update_document_status
         update_document_status(id, "validated")
-        return {"status": "ok", "message": "Documento validado definitivamente"}
+        
+        # Obtener el texto del documento para indexarlo vectorialmente en segundo plano
+        try:
+            from app.database import get_connection
+            import psycopg2.extras
+            conn = get_connection()
+            text = ""
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT content FROM documents WHERE id = %s;", (id,))
+                row = cur.fetchone()
+                if row:
+                    text = row["content"]
+            conn.close()
+            
+            if text:
+                from app.services.rag import index_document_chunks
+                background_tasks.add_task(index_document_chunks, id, text)
+        except Exception as idx_err:
+            print(f"Error al programar indexación vectorial en background: {idx_err}")
+            
+        return {"status": "ok", "message": "Documento validado definitivamente e indexado vectorialmente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -404,6 +529,31 @@ def get_document_analysis(id: str):
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/cases/{case_number}/pieces/{pieza_number}/download")
+def download_pieza_pdf(case_number: str, pieza_number: int):
+    """
+    Retorna el archivo PDF unificado correspondiente a la pieza y expediente indicados.
+    Si el archivo no está pre-generado, lo genera al vuelo antes de retornar.
+    """
+    MERGED_DIR = "data/merged"
+    safe_case = "".join(c for c in case_number if c.isalnum() or c in "._- ")
+    output_filename = f"{safe_case}_pieza_{pieza_number}.pdf"
+    output_path = os.path.join(MERGED_DIR, output_filename)
+    
+    if not os.path.exists(output_path):
+        # Generar al vuelo
+        from app.services.document import merge_pieza_pdfs
+        output_path = merge_pieza_pdfs(case_number, pieza_number)
+        
+    if not output_path or not os.path.exists(output_path):
+        raise HTTPException(status_code=404, detail="No se pudo fusionar ni encontrar el PDF de la pieza solicitada.")
+        
+    return FileResponse(
+        path=output_path,
+        filename=f"expediente_{safe_case}_pieza_{pieza_number}.pdf",
+        media_type="application/pdf"
+    )
 
 if __name__ == "__main__":
     import uvicorn
