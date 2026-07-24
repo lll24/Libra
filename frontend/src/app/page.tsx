@@ -4,6 +4,7 @@ import { useLibra } from "../hooks/useLibra";
 import { AnalyzerView } from "../components/AnalyzerView";
 import { ArchiveView } from "../components/ArchiveView";
 import { SearchView } from "../components/SearchView";
+import TopNavBar from "../components/TopNavBar";
 
 export default function Home() {
   const {
@@ -92,121 +93,23 @@ export default function Home() {
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Header */}
-      <header className="border-b border-slate-800/60 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[96%] mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <span className="font-black text-white text-base tracking-wider">L</span>
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-white tracking-wide">LIBRA</h1>
-              <p className="text-[10px] text-slate-400 font-medium">Expedientes Judiciales Digitales</p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Selector de Rol */}
-            <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5 shadow-inner">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol:</span>
-              <select
-                value={userRole}
-                onChange={(e) => {
-                  const role = e.target.value as any;
-                  setUserRole(role);
-                  resetWorkflow();
-                  setShowIncidentsTab(false);
-                  if (role === "digital_secretary" || role === "court_secretary") {
-                    setViewMode("archive");
-                  } else if (role === "reader_user") {
-                    setViewMode("search");
-                  }
-                }}
-                className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"
-              >
-                <option value="digital_secretary" className="bg-slate-900 text-white">🖨️ Secretario Digital</option>
-                <option value="court_secretary" className="bg-slate-900 text-white">💼 Secretario de Tribunal</option>
-                <option value="reader_user" className="bg-slate-900 text-white">📖 Abogado Lector</option>
-              </select>
-            </div>
-
-            {/* Botones de Navegación según Rol */}
-            {userRole === "digital_secretary" && (
-              <button
-                onClick={() => {
-                  setViewMode("archive");
-                  setShowIncidentsTab(false);
-                  fetchArchiveList();
-                  setError(null);
-                }}
-                className="hidden" // Hiddes buttons as digital secretary only has archivero
-              />
-            )}
-
-            {userRole === "court_secretary" && (
-              <>
-                <button
-                  onClick={() => {
-                    setViewMode("archive");
-                    setShowIncidentsTab(false);
-                    fetchArchiveList();
-                    setError(null);
-                  }}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                    viewMode === "archive"
-                      ? "bg-blue-600 border-blue-500 text-white font-semibold shadow-md shadow-blue-600/20"
-                      : "bg-slate-800/60 border-slate-700 hover:bg-slate-700/80 text-slate-300"
-                  }`}
-                >
-                  🗄️ Ver Expedientes
-                </button>
-                <button
-                  onClick={() => {
-                    setViewMode("search");
-                    searchCausasAction("");
-                  }}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                    viewMode === "search"
-                      ? "bg-blue-600 border-blue-500 text-white font-semibold shadow-md shadow-blue-600/20"
-                      : "bg-slate-800/60 border-slate-700 hover:bg-slate-700/80 text-slate-300"
-                  }`}
-                >
-                  🔍 Buscar Causas
-                </button>
-              </>
-            )}
-
-            {userRole === "reader_user" && (
-              <button
-                className="text-xs bg-blue-600 border border-blue-500 text-white font-semibold px-3 py-1.5 rounded-lg shadow-md shadow-blue-600/20"
-                onClick={() => {
-                  setViewMode("search");
-                  searchCausasAction("");
-                }}
-              >
-                🔍 Módulo de Búsqueda
-              </button>
-            )}
-
-            {currentStep !== "upload" && viewMode === "analyzer" && userRole === "digital_secretary" && (
-              <button
-                onClick={resetWorkflow}
-                className="text-xs bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition-all"
-              >
-                Nuevo documento
-              </button>
-            )}
-            <div className="flex items-center gap-2 ml-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] text-slate-400 font-medium">Postgres Activo</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Top Navigation Bar */}
+      <TopNavBar
+        userRole={userRole}
+        setUserRole={setUserRole}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        currentStep={currentStep}
+        resetWorkflow={resetWorkflow}
+        setShowIncidentsTab={setShowIncidentsTab}
+        fetchArchiveList={fetchArchiveList}
+        searchCausasAction={searchCausasAction}
+        setError={setError}
+      />
 
       {/* Content Container */}
       <div className="max-w-[96%] mx-auto px-6 py-8">
-        
+
         {viewMode === "analyzer" && (
           <AnalyzerView
             currentStep={currentStep}
