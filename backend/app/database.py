@@ -263,7 +263,7 @@ def report_incident(doc_id, note):
         release_connection(conn)
 
 def resolve_incident(incident_id):
-    """Resuelve un incidente y regresa el estado del documento a 'validated'."""
+    """Resuelve un incidente y regresa el estado del documento a 'draft'."""
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -274,8 +274,8 @@ def resolve_incident(incident_id):
                 doc_id = row[0]
                 # Resolver incidente
                 cur.execute("UPDATE incidents SET status = 'resolved' WHERE id = %s;", (incident_id,))
-                # Regresar a validado
-                cur.execute("UPDATE documents SET status = 'validated' WHERE id = %s;", (doc_id,))
+                # Regresar a borrador (base)
+                cur.execute("UPDATE documents SET status = 'draft' WHERE id = %s;", (doc_id,))
                 conn.commit()
     except Exception as e:
         conn.rollback()
@@ -303,7 +303,7 @@ def get_incidents():
     finally:
         release_connection(conn)
 
-def search_documents(query_str):
+def search_documents(query_str, role=None):
     """
     Busca causas en la base de datos por:
     - Número de caso/expediente
@@ -315,17 +315,31 @@ def search_documents(query_str):
         # Sanitizar query
         q = f"%{query_str}%"
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("""
-                SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status
-                FROM documents d
-                LEFT JOIN entities e ON d.id = e.document_id
-                WHERE d.case_number ILIKE %s 
-                   OR d.filename ILIKE %s
-                   OR d.content ILIKE %s
-                   OR e.cedula ILIKE %s 
-                   OR e.name ILIKE %s
-                ORDER BY d.id DESC;
-            """, (q, q, q, q, q))
+            if role == "reader_user":
+                cur.execute("""
+                    SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status
+                    FROM documents d
+                    LEFT JOIN entities e ON d.id = e.document_id
+                    WHERE (d.case_number ILIKE %s 
+                       OR d.filename ILIKE %s
+                       OR d.content ILIKE %s
+                       OR e.cedula ILIKE %s 
+                       OR e.name ILIKE %s)
+                       AND d.status != 'incident'
+                    ORDER BY d.id DESC;
+                """, (q, q, q, q, q))
+            else:
+                cur.execute("""
+                    SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status
+                    FROM documents d
+                    LEFT JOIN entities e ON d.id = e.document_id
+                    WHERE d.case_number ILIKE %s 
+                       OR d.filename ILIKE %s
+                       OR d.content ILIKE %s
+                       OR e.cedula ILIKE %s 
+                       OR e.name ILIKE %s
+                    ORDER BY d.id DESC;
+                """, (q, q, q, q, q))
             docs = list(cur.fetchall())
             
             # Para cada documento, recuperar sus entidades
@@ -387,7 +401,7 @@ def search_relevant_chunks(case_number, query_embedding, limit=5):
                 SELECT c.content, c.chunk_index, d.filename, d.start_folio, d.end_folio
                 FROM document_chunks c
                 JOIN documents d ON c.document_id = d.id
-                WHERE d.case_number = %s
+                WHERE d.case_number = %s AND d.status != 'incident'
                 ORDER BY c.embedding <=> %s::vector
                 LIMIT %s;
             """, (case_number, emb_str, limit))

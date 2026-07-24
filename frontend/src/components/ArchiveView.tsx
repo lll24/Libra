@@ -245,6 +245,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                                     <p className="text-[11px] font-semibold truncate flex-grow" title={item.filename}>
                                       {item.filename}
                                     </p>
+                                    {item.status === "draft" && <span className="text-[7px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.5 rounded font-bold uppercase shrink-0">Disponible</span>}
                                     {item.status === "validated" && <span className="text-[7px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1 py-0.5 rounded font-bold uppercase shrink-0">Validado</span>}
                                     {item.status === "incident" && <span className="text-[7px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-1 py-0.5 rounded font-bold uppercase shrink-0">Incidente</span>}
                                   </div>
@@ -330,6 +331,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                     <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl flex flex-col h-full relative">
                       <div className="flex justify-between items-center mb-2">
                         <h3 className="text-xs font-bold text-white">Visualizador</h3>
+                        {selectedArchiveItem.status === "draft" && <span className="text-[8px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✔️ Disponible</span>}
                         {selectedArchiveItem.status === "validated" && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✔️ Validado</span>}
                         {selectedArchiveItem.status === "incident" && <span className="text-[8px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold uppercase">⚠️ Incidente Abierto</span>}
                       </div>

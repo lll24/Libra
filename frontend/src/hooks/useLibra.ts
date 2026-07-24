@@ -153,6 +153,7 @@ export const useLibra = () => {
       if (userRole === "digital_secretary") {
         alert("Cambios guardados y expediente guardado en base de datos correctamente.");
         resetWorkflow();
+        fetchArchiveList();
       } else {
         setCurrentStep("analyzed");
         setChatMessages([
@@ -242,6 +243,7 @@ export const useLibra = () => {
       await api.saveArchiveText(BACKEND_URL, archiveId, rawText);
       alert("Texto corregido guardado como Borrador en la base de datos.");
       resetWorkflow();
+      fetchArchiveList();
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -254,7 +256,7 @@ export const useLibra = () => {
     setSelectedSearchCase(null);
     setSelectedCausa(null);
     try {
-      const data = await api.searchCausas(BACKEND_URL, query);
+      const data = await api.searchCausas(BACKEND_URL, query, userRole);
       setSearchResults(data);
       if (data.length === 0 && query.trim() !== "") {
         alert("No se encontraron causas registradas con ese número de caso o cédula.");
@@ -370,7 +372,7 @@ export const useLibra = () => {
     fetchIncidents();
     searchCausas("");
     fetchArchiveList();
-  }, []);
+  }, [userRole]);
 
   return {
     BACKEND_URL,

@@ -278,10 +278,10 @@ def query_document(request: ChatQueryRequest):
             else:
                 # Fallback: Si no hay chunks en la base vectorial, cargamos todo el texto de los documentos del caso
                 try:
-                    from app.database import get_connection
+                    from app.database import get_connection, release_connection
                     conn = get_connection()
                     with conn.cursor() as cur:
-                        cur.execute("SELECT filename, content, start_folio, end_folio FROM documents WHERE case_number = %s;", (request.case_number,))
+                        cur.execute("SELECT filename, content, start_folio, end_folio FROM documents WHERE case_number = %s AND status != 'incident';", (request.case_number,))
                         rows = cur.fetchall()
                         print(f"DEBUG: Fallback documents found: {len(rows)}")
                         if rows:
@@ -292,7 +292,7 @@ def query_document(request: ChatQueryRequest):
                                     f"{row[1]}"
                                 )
                             context = "\n\n".join(context_parts)
-                    conn.close()
+                    release_connection(conn)
                 except Exception as db_err:
                     print(f"Error en fallback de chat-query: {db_err}")
         
@@ -338,7 +338,7 @@ def list_archive():
             
         doc_meta = {}
         try:
-            from app.database import get_connection
+            from app.database import get_connection, release_connection
             conn = get_connection()
             with conn.cursor() as cur:
                 cur.execute("SELECT id, status, case_number, court_name, date, crime_or_subject, summary, page_count, pieza_number, start_folio, end_folio FROM documents;")
@@ -346,7 +346,7 @@ def list_archive():
                 for row in cur.fetchall():
                     row_dict = dict(zip(columns, row))
                     doc_meta[row_dict["id"]] = row_dict
-            conn.close()
+            release_connection(conn)
         except Exception as db_err:
             print(f"Error al obtener metadatos de documentos de DB: {db_err}")
             
@@ -411,13 +411,13 @@ def update_archive_text(filename_id: str, request: UpdateTextRequest):
             f.write(request.text)
         # Resolver incidentes asociados automáticamente en base de datos
         try:
-            from app.database import get_connection
+            from app.database import get_connection, release_connection
             conn = get_connection()
             with conn.cursor() as cur:
                 cur.execute("UPDATE incidents SET status = 'resolved' WHERE document_id = %s;", (filename_id,))
-                cur.execute("UPDATE documents SET status = 'validated' WHERE id = %s;", (filename_id,))
+                cur.execute("UPDATE documents SET status = 'draft' WHERE id = %s;", (filename_id,))
             conn.commit()
-            conn.close()
+            release_connection(conn)
         except Exception as db_err:
             print(f"Error al auto-resolver incidentes: {db_err}")
             
@@ -439,7 +439,7 @@ def validate_document(id: str, background_tasks: BackgroundTasks):
         
         # Obtener el texto del documento para indexarlo vectorialmente en segundo plano
         try:
-            from app.database import get_connection
+            from app.database import get_connection, release_connection
             import psycopg2.extras
             conn = get_connection()
             text = ""
@@ -448,7 +448,7 @@ def validate_document(id: str, background_tasks: BackgroundTasks):
                 row = cur.fetchone()
                 if row:
                     text = row["content"]
-            conn.close()
+            release_connection(conn)
             
             if text:
                 from app.services.rag import index_document_chunks
@@ -487,10 +487,10 @@ def resolve_incident_endpoint(id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/search")
-def search_cases(q: str):
+def search_cases(q: str, role: Optional[str] = None):
     try:
         from app.database import search_documents
-        return search_documents(q)
+        return search_documents(q, role=role)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

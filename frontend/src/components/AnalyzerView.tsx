@@ -1,6 +1,64 @@
 import React from "react";
 import { Entity, JudicialFileAnalysis, ChatMessage, getRoleBadgeStyle, getRoleLabel } from "@/types";
 
+const renderMarkdown = (text: string) => {
+  if (!text) return null;
+  const lines = text.split("\n");
+  return lines.map((line, lineIdx) => {
+    let cleanLine = line.trim();
+    if (cleanLine.startsWith("###")) {
+      const content = cleanLine.replace(/^###\s*/, "");
+      return <h4 key={lineIdx} className="font-bold text-slate-100 text-[11px] mt-2 mb-1">{parseInline(content)}</h4>;
+    }
+    if (cleanLine.startsWith("##")) {
+      const content = cleanLine.replace(/^##\s*/, "");
+      return <h3 key={lineIdx} className="font-black text-slate-100 text-[12px] mt-3 mb-1.5">{parseInline(content)}</h3>;
+    }
+    if (cleanLine.startsWith("#")) {
+      const content = cleanLine.replace(/^#\s*/, "");
+      return <h2 key={lineIdx} className="font-black text-white text-[13px] mt-3 mb-1.5">{parseInline(content)}</h2>;
+    }
+    const isBulletList = cleanLine.startsWith("* ") || cleanLine.startsWith("- ");
+    const isNumberedList = /^\d+\.\s+/.test(cleanLine);
+    if (isBulletList) {
+      const content = cleanLine.replace(/^[*+-]\s*/, "");
+      return (
+        <div key={lineIdx} className="flex gap-1.5 ml-2 my-0.5 items-start">
+          <span className="text-blue-400 shrink-0">•</span>
+          <span className="text-slate-200">{parseInline(content)}</span>
+        </div>
+      );
+    }
+    if (isNumberedList) {
+      const match = cleanLine.match(/^(\d+)\.\s+(.*)/);
+      if (match) {
+        const num = match[1];
+        const content = match[2];
+        return (
+          <div key={lineIdx} className="flex gap-1.5 ml-2 my-0.5 items-start">
+            <span className="text-blue-400 font-bold shrink-0">{num}.</span>
+            <span className="text-slate-200">{parseInline(content)}</span>
+          </div>
+        );
+      }
+    }
+    if (cleanLine === "") {
+      return <div key={lineIdx} className="h-1.5" />;
+    }
+    return <p key={lineIdx} className="my-0.5 text-slate-200">{parseInline(line)}</p>;
+  });
+};
+
+const parseInline = (text: string) => {
+  const parts = text.split(/\*\*([^*]+)\*\*/g);
+  return parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      return <strong key={idx} className="font-extrabold text-white">{part}</strong>;
+    }
+    return part;
+  });
+};
+
 interface AnalyzerViewProps {
   currentStep: "upload" | "ocr_edit" | "analyzed";
   ocrMode: "local" | "ai";
@@ -563,7 +621,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                             : "bg-slate-800/80 text-slate-200 border border-slate-700/60 rounded-tl-none"
                         }`}
                       >
-                        {msg.text}
+                        {msg.sender === "user" ? msg.text : renderMarkdown(msg.text)}
                       </div>
                     </div>
                   ))}

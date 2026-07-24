@@ -101,8 +101,9 @@ export const api = {
     }
   },
 
-  searchCausas: async (backendUrl: string, query: string): Promise<any[]> => {
-    const response = await fetch(`${backendUrl}/api/search?q=${encodeURIComponent(query)}`);
+  searchCausas: async (backendUrl: string, query: string, role?: string): Promise<any[]> => {
+    const roleParam = role ? `&role=${encodeURIComponent(role)}` : "";
+    const response = await fetch(`${backendUrl}/api/search?q=${encodeURIComponent(query)}${roleParam}`);
     if (!response.ok) {
       throw new Error("Error al buscar causas");
     }
