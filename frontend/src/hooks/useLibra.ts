@@ -370,7 +370,8 @@ export const useLibra = () => {
 
   useEffect(() => {
     fetchIncidents();
-    searchCausas("");
+    // Intentionally omitting searchCausas("") here to avoid state updates during render
+    // If needed, searchCausas("") should be invoked by a separate event or initialization
     fetchArchiveList();
   }, [userRole]);
 

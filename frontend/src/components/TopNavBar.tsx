@@ -52,44 +52,7 @@ export default function TopNavBar({
             {/* Seccion Derecha: Botones y Rol */}
             <div className="flex items-center gap-4">
 
-                {/* Botones Centrales (Secretario de Tribunal) */}
-                {userRole === "court_secretary" && (
-                    <div className="flex items-center gap-3 mr-2">
-                        <button
-                            onClick={() => {
-                                setViewMode("archive");
-                                setShowIncidentsTab(false);
-                                fetchArchiveList();
-                                setError(null);
-                            }}
-                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] ${viewMode === "archive"
-                                ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white border border-transparent shadow-lg shadow-blue-600/20"
-                                : "bg-slate-950/80 text-slate-200 border border-slate-700 hover:bg-slate-900 hover:border-slate-600"
-                                }`}
-                        >
-                            <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                            </svg>
-                            Ver Expedientes
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setViewMode("search");
-                                searchCausasAction("");
-                            }}
-                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] ${viewMode === "search"
-                                ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white border border-transparent shadow-lg shadow-blue-600/20"
-                                : "bg-slate-950/80 text-slate-200 border border-slate-700 hover:bg-slate-900 hover:border-slate-600"
-                                }`}
-                        >
-                            <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Buscar Causas
-                        </button>
-                    </div>
-                )}
+                {/* Botones eliminados para Secretaria de Tribunal según solicitud */}
 
                 {/* Selector de Rol (Temporal) */}
                 <div className="relative group">

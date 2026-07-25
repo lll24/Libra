@@ -1,7 +1,7 @@
 "use client";
 
 import { useLibra } from "../../../hooks/useLibra";
-import { ArchiveView } from "../../ArchiveView";
+import { ArchiveView } from "./ArchiveView";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
@@ -47,6 +47,7 @@ export const DigitalSecretaryArchivePanel = ({ state }: DigitalSecretaryArchiveP
     setImageZoom,
     getPdfUrl,
     setViewMode,
+    resetWorkflow,
   } = state;
 
   return (
@@ -86,7 +87,10 @@ export const DigitalSecretaryArchivePanel = ({ state }: DigitalSecretaryArchiveP
       handleResolveIncident={handleResolveIncident}
       analyzeArchiveItem={analyzeArchiveItem}
       isAnalyzing={isAnalyzing}
-      onStartOcr={() => setViewMode("analyzer")}
+      onStartOcr={() => {
+        resetWorkflow();
+        setViewMode("analyzer");
+      }}
     />
   );
 };

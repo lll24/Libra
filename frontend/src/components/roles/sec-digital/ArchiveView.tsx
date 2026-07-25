@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { getRoleBadgeStyle, getRoleLabel } from "../types";
+import { getRoleBadgeStyle, getRoleLabel } from "../../../types";
 
 interface ArchiveViewProps {
   showIncidentsTab: boolean;
   setShowIncidentsTab: (show: boolean) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   archiveList: any[];
   archiveSearch: string;
   setArchiveSearch: (search: string) => void;
   isLoadingArchive: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectedArchiveItem: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setSelectedArchiveItem: (item: any) => void;
   archiveItemText: string;
   setArchiveItemText: (text: string) => void;
@@ -258,7 +261,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
             {userRole === "digital_secretary" && onStartOcr && (
               <button
                 onClick={onStartOcr}
-                className="w-full mb-5 py-3 rounded-xl text-xs font-semibold text-white bg-[#0e172a] hover:bg-slate-800 border border-slate-700 shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full mb-5 py-3 rounded-xl text-xs font-semibold text-white bg-[#0e172a] hover:bg-[#c5ae73] hover:text-[#0f172a] hover:border-[#c5ae73] border border-slate-700 shadow-md transition-all flex items-center justify-center gap-2"
               >
                 + Digitalizar Nuevo Documento
               </button>
@@ -431,7 +434,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3.5 text-xs text-rose-300 flex flex-col gap-1.5 shrink-0">
                       <span className="font-bold">⚠️ Nota de Incidente (Fallo reportado):</span>
                       <p className="italic bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40 leading-normal">
-                        "{activeIncident.note}"
+                        &quot;{activeIncident.note}&quot;
                       </p>
                    </div>
                 )}

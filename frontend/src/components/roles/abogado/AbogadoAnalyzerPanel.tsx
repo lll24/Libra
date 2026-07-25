@@ -1,7 +1,7 @@
 "use client";
 
 import { useLibra } from "../../../hooks/useLibra";
-import { AnalyzerView } from "../../AnalyzerView";
+import { AnalyzerView } from "../sec-digital/AnalyzerView";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
