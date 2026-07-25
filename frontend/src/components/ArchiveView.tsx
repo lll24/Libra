@@ -40,7 +40,8 @@ interface ArchiveViewProps {
   onStartOcr?: () => void;
 }
 
-export const ArchiveView: React.FC<ArchiveViewProps> = ({
+export const ArchiveView: React.FC<ArchiveViewProps> = (
+{
   showIncidentsTab,
   setShowIncidentsTab,
   archiveList,
@@ -77,10 +78,13 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
   analyzeArchiveItem,
   isAnalyzing,
   onStartOcr,
-}) => {
+}
+) => {
   const [collapsedGroups, setCollapsedGroups] = useState<{ [key: string]: boolean }>({});
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null);
   const [summaryViewMode, setSummaryViewMode] = useState<"single" | "global">("single");
+  const [showSummary, setShowSummary] = useState<boolean>(true);
+  const [showOcrPanel, setShowOcrPanel] = useState<boolean>(true);
 
   // Helper to group and sort cases
   const getGroupedCases = () => {
@@ -150,37 +154,41 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
   return (
     <>
       <div className="animate-fadeIn w-full">
-        <h2 className="text-xl font-bold text-white mb-2">
-          {showIncidentsTab && userRole === "digital_secretary" ? "⚠️ Incidentes Reportados (Abiertos)" : "🗄️ Archivero de Expedientes"}
-        </h2>
-        <p className="text-slate-400 text-xs mb-6">
-          {showIncidentsTab && userRole === "digital_secretary"
-            ? "Resuelve los incidentes marcados por las secretarias del tribunal."
-            : "Visualiza y consulta los archivos físicos y textos guardados en la base de datos."}
-        </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full mx-auto">
           {/* Columna Izquierda: Lista de Archivos / Lista de Incidentes */}
-          <div className="lg:col-span-4 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl flex flex-col h-[780px]">
+          <div className="lg:col-span-3 surface-card p-6 flex flex-col h-[780px]">
             {!showIncidentsTab || userRole !== "digital_secretary" ? (
               <>
                 {userRole === "digital_secretary" && onStartOcr && (
                   <button
                     onClick={onStartOcr}
-                    className="w-full mb-4 py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 shrink-0"
+                    className="w-full mb-5 py-3 rounded-2xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2"
                   >
-                    ➕ Digitalizar Nuevo Documento (OCR)
+                    ➕ Digitalizar Nuevo Documento
                   </button>
                 )}
 
-                <div className="mb-4 shrink-0">
-                  <input
-                    type="text"
-                    value={archiveSearch}
-                    onChange={(e) => setArchiveSearch(e.target.value)}
-                    placeholder="Buscar por nombre o expediente..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-colors"
-                  />
+                <div className="space-y-4 mb-5">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">Archivero</p>
+                    <div className="relative rounded-2xl bg-slate-950/70 border border-slate-800/80 p-3 shadow-inner">
+                      <div className="absolute inset-y-0 left-4 flex items-center text-slate-500">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        value={archiveSearch}
+                        onChange={(e) => setArchiveSearch(e.target.value)}
+                        placeholder="Buscar expediente (RIT, RUC, nombre)"
+                        className="w-full bg-transparent pl-11 pr-4 py-3 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-2xl border border-slate-800"
+                      />
+                    </div>
+                  </div>
+
+                
                 </div>
 
                 <div className="flex-grow overflow-y-auto space-y-3 pr-1">
@@ -202,7 +210,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                             }}
                             className={`flex items-center justify-between p-3 cursor-pointer border-b border-slate-800/40 hover:bg-slate-900/60 transition-colors ${
                               selectedCaseNumber === group.caseNumber && !selectedArchiveItem
-                                ? "bg-blue-600/10 text-white border-blue-500/30"
+                                ? "bg-blue-600/10 text-white border-blue-500/40 ring-1 ring-blue-500/10"
                                 : "bg-slate-900/40 text-slate-300"
                             }`}
                           >
@@ -235,9 +243,9 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                                     setSelectedCaseNumber(item.case_number);
                                     setSelectedIncident(null);
                                   }}
-                                  className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all ${
+                                  className={`p-2.5 rounded-2xl border text-left cursor-pointer transition-all ${
                                     selectedArchiveItem?.id === item.id
-                                      ? "border-blue-500 bg-blue-500/10 text-white"
+                                      ? "border-blue-500/60 bg-blue-500/10 text-white ring-2 ring-blue-500/20"
                                       : "border-slate-900 hover:border-slate-800 bg-slate-950/30 text-slate-300"
                                   }`}
                                 >
@@ -288,10 +296,10 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                               setSelectedCaseNumber(archItem.case_number);
                             }
                           }}
-                          className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all ${
-                            selectedIncident?.id === inc.id
-                              ? "border-rose-500 bg-rose-500/10 text-white"
-                              : "border-slate-800/80 hover:border-slate-700 bg-slate-950/40 text-slate-300"
+                        className={`p-2.5 rounded-2xl text-left cursor-pointer transition-all ${
+                            selectedArchiveItem?.id === inc.document_id
+                              ? "border-blue-500/50 bg-blue-500/10 text-white ring-1 ring-blue-500/15"
+                              : "border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 bg-slate-950/40 text-slate-300"
                           }`}
                         >
                           <div className="flex justify-between items-center mb-1">
@@ -310,8 +318,8 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
             )}
           </div>
 
-          {/* Columna Derecha: Detalle del Archivo Seleccionado o Vista Global */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* Columna Central: Visualizador y Ficha Resumen (colapsable) */}
+          <div className="lg:col-span-6 flex flex-col gap-6">
             {selectedArchiveItem || selectedCaseNumber ? (
               <>
                 {selectedArchiveItem && activeIncident && (
@@ -326,98 +334,34 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                 )}
 
                 {selectedArchiveItem ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[550px] shrink-0 animate-fadeIn">
-                    {/* Visualizador de PDF */}
-                    <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl flex flex-col h-full relative">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-xs font-bold text-white">Visualizador</h3>
+                  <div className="surface-card p-6 flex flex-col h-[550px] animate-fadeIn">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-xs font-bold text-white">Visualizador</h3>
+                      <div className="flex items-center gap-2">
                         {selectedArchiveItem.status === "draft" && <span className="text-[8px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✔️ Disponible</span>}
                         {selectedArchiveItem.status === "validated" && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✔️ Validado</span>}
                         {selectedArchiveItem.status === "incident" && <span className="text-[8px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold uppercase">⚠️ Incidente Abierto</span>}
                       </div>
-
-                      <div className="flex-grow border border-slate-800 bg-slate-950/60 rounded-xl overflow-auto flex items-start justify-center relative">
-                        {selectedArchiveItem.filename.toLowerCase().endsWith(".pdf") ? (
-                          <iframe
-                            src={getPdfUrl(`${BACKEND_URL}/api/files/${selectedArchiveItem.id}`)}
-                            className="w-full h-full border-none"
-                            title="Visor PDF Archivo"
-                          />
-                        ) : (
-                          <img
-                            src={`${BACKEND_URL}/api/files/${selectedArchiveItem.id}`}
-                            alt="Visualización de causa"
-                            className="object-contain p-2 w-full h-full"
-                          />
-                        )}
-                      </div>
                     </div>
 
-                    {/* Texto Plano */}
-                    <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl flex flex-col h-full">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-xs font-bold text-white">Texto Plano</h3>
-                        {userRole !== "digital_secretary" && (
-                          <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Solo lectura</span>
-                        )}
-                      </div>
-
-                      <textarea
-                        value={archiveItemText}
-                        onChange={(e) => setArchiveItemText(e.target.value)}
-                        readOnly={userRole !== "digital_secretary"}
-                        className="flex-grow w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed resize-none overflow-y-auto"
-                        placeholder="Cargando texto del archivo..."
-                      />
-
-                      <div className="mt-4 flex gap-2 justify-end">
-                        {userRole === "digital_secretary" && (
-                          <>
-                            <button
-                              onClick={updateArchiveItemText}
-                              disabled={isUpdatingArchiveText || archiveItemText === originalArchiveItemText}
-                              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-40 transition-all"
-                            >
-                              {isUpdatingArchiveText ? "Guardando..." : "💾 Guardar Borrador"}
-                            </button>
-                            <button
-                              onClick={analyzeArchiveItem}
-                              disabled={isAnalyzing || !archiveItemText.trim()}
-                              className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 disabled:opacity-40 transition-all shadow-lg shadow-blue-600/20"
-                            >
-                              {isAnalyzing ? "Analizando..." : "✔️ Re-Analizar y Validar"}
-                            </button>
-                            {archiveItemText === originalArchiveItemText && selectedArchiveItem.status === "incident" && (
-                              <button
-                                onClick={() => {
-                                  const inc = incidentsList.find(i => i.document_id === selectedArchiveItem.id && i.status === "open");
-                                  if (inc) {
-                                    handleResolveIncident(inc.id);
-                                  }
-                                }}
-                                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5"
-                              >
-                                ✔️ Resolver Incidente
-                              </button>
-                            )}
-                          </>
-                        )}
-                        {userRole === "court_secretary" && (
-                          <button
-                            onClick={() => {
-                              setShowIncidentModal(true);
-                            }}
-                            disabled={selectedArchiveItem.status === "incident"}
-                            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:pointer-events-none shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5"
-                          >
-                            {selectedArchiveItem.status === "incident" ? "⚠️ Incidente Reportado" : "⚠️ Reportar Incidente (Fallo OCR)"}
-                          </button>
-                        )}
-                      </div>
+                    <div className="flex-grow border border-slate-800 bg-slate-950/60 rounded-xl overflow-auto flex items-start justify-center relative">
+                      {selectedArchiveItem.filename.toLowerCase().endsWith(".pdf") ? (
+                        <iframe
+                          src={getPdfUrl(`${BACKEND_URL}/api/files/${selectedArchiveItem.id}`)}
+                          className="w-full h-full border-none"
+                          title="Visor PDF Archivo"
+                        />
+                      ) : (
+                        <img
+                          src={`${BACKEND_URL}/api/files/${selectedArchiveItem.id}`}
+                          alt="Visualización de causa"
+                          className="object-contain p-2 w-full h-full"
+                        />
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-slate-900/20 border border-slate-800/40 rounded-2xl p-8 text-center shrink-0 mb-4 animate-fadeIn">
+                  <div className="surface-card p-8 text-center shrink-0 mb-4 animate-fadeIn">
                     <p className="text-xs text-slate-400">
                       📂 Vista Global de la Causa: <strong className="text-white">{selectedCaseNumber}</strong>
                     </p>
@@ -427,75 +371,136 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                   </div>
                 )}
 
-                {/* Ficha Resúmenes (Executive and Global) */}
-                <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl shrink-0 text-left animate-fadeIn">
-                  <div className="flex border-b border-slate-800/80 mb-4 shrink-0">
+                {/* Ficha Resúmenes (Executive and Global) - collapsible control */}
+                <div className="surface-card p-6 shrink-0 text-left animate-fadeIn">
+                  <div className="flex items-center justify-between border-b border-slate-800/80 mb-4">
+                    <div className="flex">
+                      <button
+                        onClick={() => setSummaryViewMode("single")}
+                        className={`pb-2 px-4 text-xs font-semibold border-b-2 transition-all ${
+                          summaryViewMode === "single"
+                            ? "border-blue-500 text-blue-400 font-bold"
+                            : "border-transparent text-slate-400 hover:text-slate-300"
+                        }`}
+                      >
+                      Datos del Folio
+                      </button>
+                      <button
+                        onClick={() => setSummaryViewMode("global")}
+                        className={`pb-2 px-4 text-xs font-semibold border-b-2 transition-all ${
+                          summaryViewMode === "global"
+                            ? "border-blue-500 text-blue-400 font-bold"
+                            : "border-transparent text-slate-400 hover:text-slate-300"
+                        }`}
+                      >
+                      Datos de la causa
+                      </button>
+                    </div>
                     <button
-                      onClick={() => setSummaryViewMode("single")}
-                      className={`pb-2 px-4 text-xs font-semibold border-b-2 transition-all ${
-                        summaryViewMode === "single"
-                          ? "border-blue-500 text-blue-400 font-bold"
-                          : "border-transparent text-slate-400 hover:text-slate-300"
-                      }`}
+                      onClick={() => setShowSummary(prev => !prev)}
+                      className="text-xs text-slate-400 hover:text-slate-300"
                     >
-                      📄 Resumen de este Folio
-                    </button>
-                    <button
-                      onClick={() => setSummaryViewMode("global")}
-                      className={`pb-2 px-4 text-xs font-semibold border-b-2 transition-all ${
-                        summaryViewMode === "global"
-                          ? "border-blue-500 text-blue-400 font-bold"
-                          : "border-transparent text-slate-400 hover:text-slate-300"
-                      }`}
-                    >
-                      🌐 Resumen Global de la Causa (Folios unidos)
+                      {showSummary ? 'Ocultar' : 'Mostrar'}
                     </button>
                   </div>
-
-                  {summaryViewMode === "single" ? (
-                    <div>
-                      {selectedArchiveItem ? (
-                        <div>
-                          <h4 className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Resumen Ejecutivo del Folio</h4>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            {selectedArchiveItem.summary || "Sin resumen disponible para este folio."}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-500 italic">Selecciona un folio de la lista izquierda para ver su resumen individual.</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <h4 className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2">Resúmenes de los Folios del Expediente</h4>
-                      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
-                        {archiveList
-                          .filter(d => d.case_number === selectedCaseNumber)
-                          .map((doc, idx) => (
-                            <div key={doc.id} className="border-b border-slate-800/40 pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0">
-                              <span className="text-[10px] font-bold text-blue-400 block mb-1">
-                                📄 {doc.filename} (Folios: {doc.start_folio || 1} - {doc.end_folio || 1})
-                              </span>
-                              <p className="text-xs text-slate-350 leading-relaxed">
-                                {doc.summary || "Sin resumen disponible para este folio."}
-                              </p>
-                            </div>
-                          ))}
-                        {archiveList.filter(d => d.case_number === selectedCaseNumber).length === 0 && (
-                          <p className="text-xs text-slate-500 italic">No hay documentos cargados en esta causa.</p>
+                  
+                  {showSummary ? (
+                    summaryViewMode === "single" ? (
+                      <div>
+                        {selectedArchiveItem ? (
+                          <div>
+                            <h4 className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Resumen Ejecutivo del Folio</h4>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                              {selectedArchiveItem.summary || "Sin resumen disponible para este folio."}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-500 italic">Selecciona un folio de la lista izquierda para ver su resumen individual.</p>
                         )}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div>
+                        <h4 className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2">Resúmenes de los Folios del Expediente</h4>
+                        <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                          {archiveList
+                            .filter(d => d.case_number === selectedCaseNumber)
+                            .map((doc, idx) => (
+                              <div key={doc.id} className="border-b border-slate-800/40 pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0">
+                                <span className="text-[10px] font-bold text-blue-400 block mb-1">
+                                  📄 {doc.filename} (Folios: {doc.start_folio || 1} - {doc.end_folio || 1})
+                                </span>
+                                <p className="text-xs text-slate-350 leading-relaxed">
+                                  {doc.summary || "Sin resumen disponible para este folio."}
+                                </p>
+                              </div>
+                            ))}
+                          {archiveList.filter(d => d.case_number === selectedCaseNumber).length === 0 && (
+                            <p className="text-xs text-slate-500 italic">No hay documentos cargados en esta causa.</p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  ) : null}
                 </div>
               </>
             ) : (
-              <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-12 backdrop-blur-xl text-center flex flex-col items-center justify-center h-[780px]">
+              <div className="surface-card p-12 text-center flex flex-col items-center justify-center h-[780px]">
                 <svg className="w-16 h-16 text-slate-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h5l2 2h9a2 2 0 012 2v8a2 2 0 01-2 2H5z" />
                 </svg>
                 <h3 className="text-sm font-semibold text-white mb-1">Ningún expediente seleccionado</h3>
                 <p className="text-xs text-slate-500">Selecciona una causa de la izquierda para ver su resumen global, o un folio para ver su documento.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Columna Derecha: OCR / Texto Plano (colapsable) */}
+          <div className="lg:col-span-3 flex flex-col gap-6">
+            {selectedArchiveItem ? (
+              <div className="surface-card p-6 flex flex-col h-[780px]">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold text-white">Texto Plano (OCR)</h3>
+                  <button onClick={() => setShowOcrPanel(prev => !prev)} className="text-xs text-slate-400 hover:text-slate-300">{showOcrPanel ? 'Ocultar ▾' : 'Mostrar ▸'}</button>
+                </div>
+
+                {showOcrPanel ? (
+                  <>
+                    <textarea
+                      value={archiveItemText}
+                      onChange={(e) => setArchiveItemText(e.target.value)}
+                      readOnly={userRole !== "digital_secretary"}
+                      className="flex-grow w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 leading-relaxed resize-none overflow-y-auto"
+                      placeholder="Cargando texto del archivo..."
+                    />
+
+                    <div className="mt-4 flex gap-2 justify-end">
+                      {userRole === "digital_secretary" && (
+                        <>
+                          <button
+                            onClick={updateArchiveItemText}
+                            disabled={isUpdatingArchiveText || archiveItemText === originalArchiveItemText}
+                            className="btn-secondary disabled:opacity-40"
+                          >
+                            {isUpdatingArchiveText ? "Guardando..." : "💾 Guardar Borrador"}
+                          </button>
+                          <button
+                            onClick={analyzeArchiveItem}
+                            disabled={isAnalyzing || !archiveItemText.trim()}
+                            className="btn-primary disabled:opacity-40"
+                          >
+                            {isAnalyzing ? "Analizando..." : "✔️ Re-Analizar y Validar"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-grow flex items-center justify-center text-slate-400">Panel OCR oculto</div>
+                )}
+              </div>
+            ) : (
+              <div className="surface-card p-6 h-[780px] flex items-center justify-center text-slate-500">
+                Selecciona un folio para ver el texto OCR aquí.
               </div>
             )}
           </div>

@@ -5,40 +5,40 @@ import { SearchView } from "../../SearchView";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
-interface LectorViewProps {
+interface PublicReaderSearchPanelProps {
   state: LibraHookState;
 }
 
-export const LectorView = ({ state }: LectorViewProps) => {
+export const PublicReaderSearchPanel = ({ state }: PublicReaderSearchPanelProps) => {
   const {
+    BACKEND_URL,
     searchQuery,
     setSearchQuery,
-    searchCausasAction,
     searchResults,
     isSearchingCausas,
     selectedCausa,
     setSelectedCausa,
+    searchAnalysisResult,
+    setSearchAnalysisResult,
     showChatbot,
     setShowChatbot,
-    chatMessages,
-    chatInput,
-    setChatInput,
-    isChatSending,
-    sendChatMessage,
+    incidentNote,
+    setIncidentNote,
+    showIncidentModal,
+    setShowIncidentModal,
+    setFile,
     rawText,
     setRawText,
     userRole,
-    BACKEND_URL,
     getPdfUrl,
     setFileUrl,
-    setFile,
-    searchAnalysisResult,
-    setSearchAnalysisResult,
-    showIncidentModal,
-    setShowIncidentModal,
-    incidentNote,
-    setIncidentNote,
+    chatInput,
+    setChatInput,
+    chatMessages,
+    isChatSending,
+    sendChatMessage,
     submitIncident,
+    searchCausasAction,
   } = state;
 
   return (

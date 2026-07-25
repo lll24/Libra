@@ -376,7 +376,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
               ) : (
                 <button
                   onClick={resetWorkflow}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-slate-700 transition-all"
+                  className="btn-secondary"
                 >
                   Volver a cargar
                 </button>
@@ -651,7 +651,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                   <button
                     onClick={sendChatMessage}
                     disabled={isChatSending || !chatInput.trim()}
-                    className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 px-4 rounded-xl text-white font-semibold text-xs transition-all"
+                    className="btn-primary disabled:opacity-40"
                   >
                     Enviar
                   </button>
@@ -670,14 +670,14 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                     {onBackToArchive && (
                       <button
                         onClick={onBackToArchive}
-                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-6 py-2.5 rounded-xl transition-all border border-slate-700"
+                        className="btn-secondary"
                       >
                         ⬅️ Volver al Archivero
                       </button>
                     )}
                     <button
                       onClick={() => validateDocumentDirectly(archiveId)}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 transition-all"
                     >
                       ✔️ Validar Definitivamente
                     </button>

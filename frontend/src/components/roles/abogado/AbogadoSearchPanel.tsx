@@ -5,40 +5,42 @@ import { SearchView } from "../../SearchView";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
-interface LectorViewProps {
+interface AbogadoSearchPanelProps {
   state: LibraHookState;
 }
 
-export const LectorView = ({ state }: LectorViewProps) => {
+export const AbogadoSearchPanel = ({ state }: AbogadoSearchPanelProps) => {
   const {
+    BACKEND_URL,
     searchQuery,
     setSearchQuery,
-    searchCausasAction,
     searchResults,
     isSearchingCausas,
     selectedCausa,
     setSelectedCausa,
+    searchAnalysisResult,
+    setSearchAnalysisResult,
     showChatbot,
     setShowChatbot,
-    chatMessages,
-    chatInput,
-    setChatInput,
-    isChatSending,
-    sendChatMessage,
+    incidentNote,
+    setIncidentNote,
+    showIncidentModal,
+    setShowIncidentModal,
+    file,
+    setFile,
+    fileUrl,
     rawText,
     setRawText,
     userRole,
-    BACKEND_URL,
     getPdfUrl,
     setFileUrl,
-    setFile,
-    searchAnalysisResult,
-    setSearchAnalysisResult,
-    showIncidentModal,
-    setShowIncidentModal,
-    incidentNote,
-    setIncidentNote,
+    chatInput,
+    setChatInput,
+    chatMessages,
+    isChatSending,
+    sendChatMessage,
     submitIncident,
+    searchCausasAction,
   } = state;
 
   return (

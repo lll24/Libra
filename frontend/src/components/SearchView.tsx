@@ -161,12 +161,12 @@ export const SearchView: React.FC<SearchViewProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && searchCausas(searchQuery)}
               placeholder="Introduce cédula, nombre o número de causa..."
-              className="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500 transition-colors"
+              className="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
             />
             <button
               onClick={() => searchCausas(searchQuery)}
               disabled={isSearchingCausas}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold text-xs px-6 py-3 rounded-xl transition-all shadow-md shadow-blue-600/20"
+              className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 disabled:opacity-40 text-white font-semibold text-xs px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-600/20"
             >
               {isSearchingCausas ? "Buscando..." : "Buscar"}
             </button>
@@ -219,7 +219,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                           setSelectedCausa(null);
                           setSummaryViewMode("global");
                         }}
-                        className="text-[9px] bg-blue-650 hover:bg-blue-600 text-white border border-blue-550 px-2 py-0.5 rounded font-bold shrink-0 transition-all shadow-sm"
+                        className="text-[9px] bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white border border-transparent px-2 py-0.5 rounded-full font-bold shrink-0 transition-all shadow-md shadow-blue-600/20"
                       >
                         🌐 Ver Global
                       </button>
@@ -254,10 +254,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                                 console.error(err);
                               }
                             }}
-                            className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all ${
+                        className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all shadow-sm ${
                               selectedCausa?.id === causa.id
-                                ? "border-blue-500 bg-blue-500/10 text-white"
-                                : "border-slate-900 hover:border-slate-800 bg-slate-950/30 text-slate-300"
+                                ? "border-blue-500 bg-blue-500/15 text-white"
+                                : "border-slate-900/80 hover:border-slate-700 hover:bg-slate-900/60 bg-slate-950/40 text-slate-300"
                             }`}
                           >
                             <p className="text-[11px] font-semibold truncate" title={causa.filename}>{causa.filename}</p>
@@ -502,7 +502,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                           />
                           <button
                             onClick={sendChatMessage}
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-xl text-xs font-semibold"
+                            className="btn-primary"
                           >
                             Enviar
                           </button>

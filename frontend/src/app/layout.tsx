@@ -30,7 +30,7 @@ export default function RootLayout({
       lang="es"
       className={`${montserrat.variable} ${roboto.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 font-sans">
+      <body className="min-h-full flex flex-col bg-[#090d16] text-[#e2e8f0] font-sans">
         {children}
       </body>
     </html>

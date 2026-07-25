@@ -1,91 +1,29 @@
 "use client";
 
 import { useLibra } from "../hooks/useLibra";
-import { AnalyzerView } from "../components/AnalyzerView";
-import { ArchiveView } from "../components/ArchiveView";
-import { SearchView } from "../components/SearchView";
 import TopNavBar from "../components/TopNavBar";
+import { RoleWorkspace } from "../components/roles/RoleWorkspace";
 
 export default function Home() {
+  const state = useLibra();
   const {
-    BACKEND_URL,
-    currentStep,
-    ocrMode,
-    setOcrMode,
-    viewMode,
-    setViewMode,
-    sourceTab,
-    setSourceTab,
     userRole,
     setUserRole,
-    searchQuery,
-    setSearchQuery,
-    searchResults,
-    isSearchingCausas,
-    selectedCausa,
-    setSelectedCausa,
-    searchAnalysisResult,
-    setSearchAnalysisResult,
-    showChatbot,
-    setShowChatbot,
+    viewMode,
+    setViewMode,
+    currentStep,
+    resetWorkflow,
+    setShowIncidentsTab,
+    fetchArchiveList,
+    searchCausasAction,
+    setError,
+    showIncidentModal,
+    selectedArchiveItem,
     incidentNote,
     setIncidentNote,
-    showIncidentModal,
     setShowIncidentModal,
-    incidentsList,
-    selectedIncident,
-    setSelectedIncident,
-    showIncidentsTab,
-    setShowIncidentsTab,
-    file,
-    setFile,
-    fileUrl,
-    setFileUrl,
-    isProcessingOcr,
-    isAnalyzing,
-    rawText,
-    setRawText,
-    archiveId,
-    result,
-    error,
-    setError,
-    dragActive,
-    handleDrag,
-    handleDrop,
-    handleFileChange,
-    runLocalOcr,
-    runAnalysis,
-    sendChatMessage,
-    validateDocumentDirectly,
     submitIncident,
-    fetchIncidents,
-    handleResolveIncident,
-    searchCausasAction,
-    resetWorkflow,
-    fetchArchiveList,
-    selectArchiveItem,
-    updateArchiveItemText,
-    analyzeArchiveItem,
-    archiveList,
-    isLoadingArchive,
-    selectedArchiveItem,
-    setSelectedArchiveItem,
-    archiveItemText,
-    setArchiveItemText,
-    originalArchiveItemText,
-    setOriginalArchiveItemText,
-    isUpdatingArchiveText,
-    archiveSearch,
-    setArchiveSearch,
-    imageZoom,
-    setImageZoom,
-    getPdfUrl,
-    chatInput,
-    setChatInput,
-    chatMessages,
-    setChatMessages,
-    isChatSending,
-  } = useLibra();
+  } = state;
 
   return (
     <main className="min-h-screen bg-[#090d16] text-[#e2e8f0] font-sans relative">
@@ -107,125 +45,9 @@ export default function Home() {
         setError={setError}
       />
 
-      {/* Content Container */}
       <div className="max-w-[96%] mx-auto px-6 py-8">
+        <RoleWorkspace state={state} />
 
-        {viewMode === "analyzer" && (
-          <AnalyzerView
-            currentStep={currentStep}
-            ocrMode={ocrMode}
-            setOcrMode={setOcrMode}
-            sourceTab={sourceTab}
-            setSourceTab={setSourceTab}
-            file={file}
-            setFile={setFile}
-            fileUrl={fileUrl}
-            dragActive={dragActive}
-            handleDrag={handleDrag}
-            handleDrop={handleDrop}
-            handleFileChange={handleFileChange}
-            isProcessingOcr={isProcessingOcr}
-            runLocalOcr={runLocalOcr}
-            isAnalyzing={isAnalyzing}
-            runAnalysis={runAnalysis}
-            rawText={rawText}
-            setRawText={setRawText}
-            result={result}
-            error={error}
-            imageZoom={imageZoom}
-            setImageZoom={setImageZoom}
-            showChatbot={showChatbot}
-            setShowChatbot={setShowChatbot}
-            chatInput={chatInput}
-            setChatInput={setChatInput}
-            chatMessages={chatMessages}
-            isChatSending={isChatSending}
-            sendChatMessage={sendChatMessage}
-            BACKEND_URL={BACKEND_URL}
-            getPdfUrl={getPdfUrl}
-            userRole={userRole}
-            resetWorkflow={resetWorkflow}
-            archiveId={archiveId}
-            validateDocumentDirectly={validateDocumentDirectly}
-            onBackToArchive={() => { resetWorkflow(); setViewMode("archive"); }}
-          />
-        )}
-
-        {viewMode === "archive" && (
-          <ArchiveView
-            showIncidentsTab={showIncidentsTab}
-            setShowIncidentsTab={setShowIncidentsTab}
-            archiveList={archiveList}
-            archiveSearch={archiveSearch}
-            setArchiveSearch={setArchiveSearch}
-            isLoadingArchive={isLoadingArchive}
-            selectedArchiveItem={selectedArchiveItem}
-            setSelectedArchiveItem={setSelectedArchiveItem}
-            archiveItemText={archiveItemText}
-            setArchiveItemText={setArchiveItemText}
-            setOriginalArchiveItemText={setOriginalArchiveItemText}
-            originalArchiveItemText={originalArchiveItemText}
-            isUpdatingArchiveText={isUpdatingArchiveText}
-            fetchArchiveList={fetchArchiveList}
-            updateArchiveItemText={updateArchiveItemText}
-            validateDocumentDirectly={validateDocumentDirectly}
-            showIncidentModal={showIncidentModal}
-            setShowIncidentModal={setShowIncidentModal}
-            selectedIncident={selectedIncident}
-            setSelectedIncident={setSelectedIncident}
-            incidentNote={incidentNote}
-            setIncidentNote={setIncidentNote}
-            submitIncidentNote={submitIncident}
-            userRole={userRole}
-            BACKEND_URL={BACKEND_URL}
-            getPdfUrl={getPdfUrl}
-            incidentsList={incidentsList}
-            selectArchiveItem={selectArchiveItem}
-            imageZoom={imageZoom}
-            setImageZoom={setImageZoom}
-            setError={setError}
-            fetchIncidents={fetchIncidents}
-            handleResolveIncident={handleResolveIncident}
-            analyzeArchiveItem={analyzeArchiveItem}
-            isAnalyzing={isAnalyzing}
-            onStartOcr={() => setViewMode("analyzer")}
-          />
-        )}
-
-        {viewMode === "search" && (
-          <SearchView
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            searchCausas={searchCausasAction}
-            searchResults={searchResults}
-            isSearchingCausas={isSearchingCausas}
-            selectedCausa={selectedCausa}
-            setSelectedCausa={setSelectedCausa}
-            showChatbot={showChatbot}
-            setShowChatbot={setShowChatbot}
-            chatMessages={chatMessages}
-            chatInput={chatInput}
-            setChatInput={setChatInput}
-            isChatSending={isChatSending}
-            sendChatMessage={sendChatMessage}
-            rawText={rawText}
-            setRawText={setRawText}
-            userRole={userRole}
-            BACKEND_URL={BACKEND_URL}
-            getPdfUrl={getPdfUrl}
-            setFileUrl={setFileUrl}
-            setFile={setFile}
-            searchAnalysisResult={searchAnalysisResult}
-            setSearchAnalysisResult={setSearchAnalysisResult}
-            showIncidentModal={showIncidentModal}
-            setShowIncidentModal={setShowIncidentModal}
-            incidentNote={incidentNote}
-            setIncidentNote={setIncidentNote}
-            submitIncidentNote={submitIncident}
-          />
-        )}
-
-        {/* Modal de Incidente */}
         {showIncidentModal && selectedArchiveItem && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
@@ -260,7 +82,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
       </div>
     </main>
   );

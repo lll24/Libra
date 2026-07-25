@@ -20,7 +20,7 @@ export interface ChatMessage {
   text: string;
 }
 
-export type UserRole = "digital_secretary" | "court_secretary" | "reader_user";
+export type UserRole = "digital_secretary" | "court_secretary" | "reader_user" | "abogado";
 
 export const getRoleBadgeStyle = (role: string) => {
   switch (role.toLowerCase()) {

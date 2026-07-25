@@ -26,7 +26,7 @@ export default function TopNavBar({
     setError,
 }: TopNavBarProps) {
     return (
-        <header className="bg-[#152347] border-b border-slate-700/50 sticky top-0 z-50 h-[52px] w-full flex items-center justify-between px-6 transition-colors duration-300">
+        <header className="bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/70 sticky top-0 z-50 h-[56px] w-full flex items-center justify-between px-6 shadow-sm shadow-slate-950/50 transition-colors duration-300">
 
             {/* Sección Izquierda: Logo (Imagen) y Textos */}
             <div className="flex items-center gap-3">
@@ -43,7 +43,7 @@ export default function TopNavBar({
                     <h1 className="text-[#c5ae73] font-bold text-[15px] tracking-wide leading-none font-title">
                         LIBRA
                     </h1>
-                    <p className="text-slate-300 text-[10px] font-normal leading-tight font-sans mt-[2px]">
+                    <p className="text-slate-400 text-[10px] font-normal leading-tight font-sans mt-[2px]">
                         Expedientes Judiciales Digitales
                     </p>
                 </div>
@@ -62,9 +62,9 @@ export default function TopNavBar({
                                 fetchArchiveList();
                                 setError(null);
                             }}
-                            className={`flex items-center gap-1.5 px-4 py-1 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] hover:shadow-md ${viewMode === "archive"
-                                ? "bg-[#004aad] text-white border border-[#004aad] shadow-blue-900/50"
-                                : "bg-transparent text-slate-300 border border-slate-600 hover:bg-slate-800 hover:border-slate-500"
+                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] ${viewMode === "archive"
+                                ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white border border-transparent shadow-lg shadow-blue-600/20"
+                                : "bg-slate-950/80 text-slate-200 border border-slate-700 hover:bg-slate-900 hover:border-slate-600"
                                 }`}
                         >
                             <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,9 +78,9 @@ export default function TopNavBar({
                                 setViewMode("search");
                                 searchCausasAction("");
                             }}
-                            className={`flex items-center gap-1.5 px-4 py-1 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] hover:shadow-md ${viewMode === "search"
-                                ? "bg-[#004aad] text-white border border-[#004aad] shadow-blue-900/50"
-                                : "bg-transparent text-slate-300 border border-slate-600 hover:bg-slate-800 hover:border-slate-500"
+                            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-300 ease-out transform hover:-translate-y-[1px] ${viewMode === "search"
+                                ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white border border-transparent shadow-lg shadow-blue-600/20"
+                                : "bg-slate-950/80 text-slate-200 border border-slate-700 hover:bg-slate-900 hover:border-slate-600"
                                 }`}
                         >
                             <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@ export default function TopNavBar({
                 {/* Selector de Rol (Temporal) */}
                 <div className="relative group">
                     {/* Botón más compacto */}
-                    <div className="flex items-center gap-2 bg-[#1e293b] border border-slate-700/80 hover:border-slate-500 transition-all duration-300 rounded-full px-3 py-1 cursor-pointer shadow-sm hover:shadow-md">
+                    <div className="flex items-center gap-2 bg-slate-950/90 border border-slate-800/80 hover:border-slate-700 transition-all duration-300 rounded-full px-3 py-1 cursor-pointer shadow-lg shadow-slate-950/20">
                         {/* Icono de Usuario */}
                         <svg className="w-3 h-3 text-[#c5ae73]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -110,16 +110,17 @@ export default function TopNavBar({
                                 setShowIncidentsTab(false);
                                 if (role === "digital_secretary" || role === "court_secretary") {
                                     setViewMode("archive");
-                                } else if (role === "reader_user") {
+                                } else if (role === "reader_user" || role === "abogado") {
                                     setViewMode("search");
                                 }
                             }}
-                            className="bg-transparent text-[12px] font-bold text-white focus:outline-none appearance-none pr-4 cursor-pointer font-sans transition-colors duration-200"
+                            className="bg-transparent text-[12px] font-bold text-slate-100 focus:outline-none appearance-none pr-4 cursor-pointer font-sans transition-colors duration-200"
                             style={{ backgroundImage: 'none' }}
                         >
                             <option value="digital_secretary" className="bg-[#152347] text-white">Secretario Digital</option>
                             <option value="court_secretary" className="bg-[#152347] text-white">Secretaria de Tribunal</option>
                             <option value="reader_user" className="bg-[#152347] text-white">Usuario Lector</option>
+                            <option value="abogado" className="bg-[#152347] text-white">Abogado</option>
                         </select>
 
                         {/* Flecha */}
