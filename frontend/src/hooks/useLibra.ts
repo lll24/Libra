@@ -58,6 +58,7 @@ export const useLibra = () => {
   const [result, setResult] = useState<JudicialFileAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [isDocumentCached, setIsDocumentCached] = useState(false);
 
   // Chat
   const [chatInput, setChatInput] = useState("");
@@ -124,6 +125,7 @@ export const useLibra = () => {
       const data = await api.runOcr(BACKEND_URL, file, ocrMode);
       setRawText(data.text);
       setArchiveId(data.id);
+      setIsDocumentCached(!!(data as any).cached);
       setCurrentStep("ocr_edit");
     } catch (err: any) {
       console.error(err);
@@ -297,6 +299,7 @@ export const useLibra = () => {
     setCurrentStep("upload");
     setImageZoom(1);
     setSelectedSearchCase(null);
+    setIsDocumentCached(false);
   };
 
   const fetchArchiveList = async () => {
@@ -506,10 +509,10 @@ export const useLibra = () => {
     setChatInput,
     chatMessages,
     setChatMessages,
-    isChatSending,
     isLoginOpen,
     setIsLoginOpen,
     loginAction,
     logoutAction,
+    isDocumentCached,
   };
 };

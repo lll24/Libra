@@ -117,6 +117,7 @@ interface AnalyzerViewProps {
   archiveId: string | null;
   validateDocumentDirectly: (id: string) => void;
   onBackToArchive?: () => void;
+  isDocumentCached?: boolean;
 }
 
 export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
@@ -156,6 +157,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
   archiveId,
   validateDocumentDirectly,
   onBackToArchive,
+  isDocumentCached = false,
 }) => {
   const [isEditingOcrText, setIsEditingOcrText] = useState(false);
 
@@ -335,6 +337,16 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
               </span>
             </div>
           </div>
+
+          {isDocumentCached && (
+            <div className="mb-6 p-4 rounded-xl border border-blue-200 bg-blue-50/80 text-blue-900 text-xs flex items-center gap-3 shadow-[2px_2px_8px_rgba(59,130,246,0.05)] animate-fadeIn">
+              <span className="text-lg">ℹ️</span>
+              <div>
+                <strong className="font-black text-blue-950">Documento Existente:</strong>{" "}
+                <span className="text-blue-850 font-medium">Este archivo ya se encuentra registrado en el sistema. Se ha recuperado el borrador guardado para evitar duplicaciones.</span>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow mx-auto min-h-0">
             {/* Columna Izquierda: Visor original */}

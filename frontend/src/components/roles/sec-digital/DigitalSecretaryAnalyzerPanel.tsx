@@ -47,6 +47,7 @@ export const DigitalSecretaryAnalyzerPanel = ({ state }: DigitalSecretaryAnalyze
     setViewMode,
     imageZoom,
     setImageZoom,
+    isDocumentCached,
   } = state;
 
   return (
@@ -86,6 +87,7 @@ export const DigitalSecretaryAnalyzerPanel = ({ state }: DigitalSecretaryAnalyze
       resetWorkflow={resetWorkflow}
       archiveId={archiveId}
       validateDocumentDirectly={validateDocumentDirectly}
+      isDocumentCached={isDocumentCached}
       onBackToArchive={() => {
         resetWorkflow();
         setViewMode("archive");
