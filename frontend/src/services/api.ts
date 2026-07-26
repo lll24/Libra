@@ -1,6 +1,19 @@
 import { JudicialFileAnalysis, ChatMessage } from "../types";
 
 export const api = {
+  login: async (backendUrl: string, email: string, password: string): Promise<{ name: string; email: string; role: string }> => {
+    const response = await fetch(`${backendUrl}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.detail || "Credenciales incorrectas.");
+    }
+    return response.json();
+  },
+
   runOcr: async (backendUrl: string, file: File, ocrMode: string): Promise<{ text: string; id: string }> => {
     const formData = new FormData();
     formData.append("file", file);

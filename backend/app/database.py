@@ -103,6 +103,28 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """)
+
+            # Crear tabla users
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) UNIQUE NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    role VARCHAR(100) NOT NULL
+                );
+            """)
+
+            # Semillar usuarios si la tabla está vacía
+            cur.execute("SELECT COUNT(*) FROM users;")
+            if cur.fetchone()[0] == 0:
+                cur.execute("""
+                    INSERT INTO users (name, email, password, role) VALUES
+                    ('Secretario Digital', 'digital@libra.gob', 'digital123', 'digital_secretary'),
+                    ('Secretaria de Tribunal', 'tribunal@libra.gob', 'tribunal123', 'court_secretary'),
+                    ('Abogado', 'abogado@libra.gob', 'abogado123', 'abogado');
+                """)
+
             conn.commit()
             print("Tablas de base de datos PostgreSQL inicializadas correctamente.")
     except Exception as e:
@@ -310,6 +332,9 @@ def search_documents(query_str, role=None):
     - Cédula de identidad (búsqueda exacta o parcial)
     - Nombre del involucrado (búsqueda insensible a mayúsculas/minúsculas)
     """
+    if role == "reader_user" and not query_str.strip():
+        return []
+
     conn = get_connection()
     try:
         # Sanitizar query
@@ -317,41 +342,107 @@ def search_documents(query_str, role=None):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if role == "reader_user":
                 cur.execute("""
-                    SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status
+                    SELECT DISTINCT d.id, d.case_number, d.court_name, d.date, d.crime_or_subject
                     FROM documents d
-                    LEFT JOIN entities e ON d.id = e.document_id
-                    WHERE (d.case_number ILIKE %s 
-                       OR d.filename ILIKE %s
-                       OR d.content ILIKE %s
-                       OR e.cedula ILIKE %s 
-                       OR e.name ILIKE %s)
-                       AND d.status != 'incident'
+                    JOIN entities e ON d.id = e.document_id
+                    WHERE (e.name ILIKE %s OR e.cedula ILIKE %s)
+                      AND d.status != 'incident'
                     ORDER BY d.id DESC;
-                """, (q, q, q, q, q))
-            else:
-                cur.execute("""
-                    SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status
-                    FROM documents d
-                    LEFT JOIN entities e ON d.id = e.document_id
-                    WHERE d.case_number ILIKE %s 
-                       OR d.filename ILIKE %s
-                       OR d.content ILIKE %s
-                       OR e.cedula ILIKE %s 
-                       OR e.name ILIKE %s
-                    ORDER BY d.id DESC;
-                """, (q, q, q, q, q))
-            docs = list(cur.fetchall())
-            
-            # Para cada documento, recuperar sus entidades
-            for doc in docs:
-                cur.execute("""
-                    SELECT name, role, context, cedula 
-                    FROM entities 
-                    WHERE document_id = %s;
-                """, (doc["id"],))
-                doc["entities"] = list(cur.fetchall())
+                """, (q, q))
+                docs = list(cur.fetchall())
+                for doc in docs:
+                    cur.execute("""
+                        SELECT name, role, context, cedula 
+                        FROM entities 
+                        WHERE document_id = %s AND (name ILIKE %s OR cedula ILIKE %s)
+                        ORDER BY name ASC;
+                    """, (doc["id"], q, q))
+                    doc["entities"] = list(cur.fetchall())
                 
-            return docs
+                # Agrupar por case_number para evitar duplicados en la lista de expedientes
+                grouped_docs = {}
+                for doc in docs:
+                    case_no = doc.get("case_number") or "Sin Expediente"
+                    if case_no not in grouped_docs:
+                        grouped_docs[case_no] = {
+                            "id": doc["id"],
+                            "case_number": case_no,
+                            "court_name": doc["court_name"],
+                            "date": doc["date"],
+                            "crime_or_subject": doc["crime_or_subject"],
+                            "entities": []
+                        }
+                    else:
+                        existing = grouped_docs[case_no]
+                        # Unificar materia/delito si difieren
+                        if doc["crime_or_subject"] and existing["crime_or_subject"]:
+                            if doc["crime_or_subject"] not in existing["crime_or_subject"]:
+                                existing["crime_or_subject"] = f"{existing['crime_or_subject']} / {doc['crime_or_subject']}"
+                        elif doc["crime_or_subject"]:
+                            existing["crime_or_subject"] = doc["crime_or_subject"]
+                        # Quedarse con la fecha más reciente
+                        if doc["date"] and (not existing["date"] or doc["date"] > existing["date"]):
+                            existing["date"] = doc["date"]
+                    
+                    # Fusionar entidades eliminando duplicados
+                    for ent in doc["entities"]:
+                        ent_key = (
+                            (ent["name"] or "").strip().lower(),
+                            (ent["cedula"] or "").strip().lower(),
+                            (ent["role"] or "").strip().lower()
+                        )
+                        exists = False
+                        for existing_ent in grouped_docs[case_no]["entities"]:
+                            existing_key = (
+                                (existing_ent["name"] or "").strip().lower(),
+                                (existing_ent["cedula"] or "").strip().lower(),
+                                (existing_ent["role"] or "").strip().lower()
+                            )
+                            if ent_key == existing_key:
+                                exists = True
+                                break
+                        if not exists:
+                            grouped_docs[case_no]["entities"].append(ent)
+                
+                return list(grouped_docs.values())
+            else:
+                if role == "abogado":
+                    cur.execute("""
+                        SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status, d.start_folio, d.end_folio
+                        FROM documents d
+                        LEFT JOIN entities e ON d.id = e.document_id
+                        WHERE (d.case_number ILIKE %s 
+                           OR d.filename ILIKE %s
+                           OR d.content ILIKE %s
+                           OR e.cedula ILIKE %s 
+                           OR e.name ILIKE %s)
+                           AND d.status != 'incident'
+                        ORDER BY d.id DESC;
+                    """, (q, q, q, q, q))
+                else:
+                    cur.execute("""
+                        SELECT DISTINCT d.id, d.filename, d.content, d.case_number, d.court_name, d.date, d.crime_or_subject, d.summary, d.status, d.start_folio, d.end_folio
+                        FROM documents d
+                        LEFT JOIN entities e ON d.id = e.document_id
+                        WHERE d.case_number ILIKE %s 
+                           OR d.filename ILIKE %s
+                           OR d.content ILIKE %s
+                           OR e.cedula ILIKE %s 
+                           OR e.name ILIKE %s
+                        ORDER BY d.id DESC;
+                    """, (q, q, q, q, q))
+                docs = list(cur.fetchall())
+                
+                # Para cada documento, recuperar sus entidades
+                for doc in docs:
+                    cur.execute("""
+                        SELECT name, role, context, cedula 
+                        FROM entities 
+                        WHERE document_id = %s;
+                    """, (doc["id"],))
+                    doc["entities"] = list(cur.fetchall())
+                    
+                return docs
     except Exception as e:
         print(f"Error en búsqueda de causas: {e}")
         return []
@@ -412,4 +503,15 @@ def search_relevant_chunks(case_number, query_embedding, limit=5):
     finally:
         release_connection(conn)
 
- # WHERE d.case_number = %s AND d.status = 'validated'
+def authenticate_user(email, password):
+    """Verifica si las credenciales de email y password son válidas y retorna el usuario."""
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT name, email, role FROM users WHERE email = %s AND password = %s;", (email.strip().lower(), password))
+            return cur.fetchone()
+    except Exception as e:
+        print(f"Error al autenticar usuario: {e}")
+        return None
+    finally:
+        release_connection(conn)

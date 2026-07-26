@@ -555,6 +555,23 @@ def download_pieza_pdf(case_number: str, pieza_number: int):
         media_type="application/pdf"
     )
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@app.post("/api/auth/login")
+def login(request: LoginRequest):
+    try:
+        from app.database import authenticate_user
+        user = authenticate_user(request.email, request.password)
+        if not user:
+            raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
+        return user
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

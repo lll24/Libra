@@ -15,11 +15,26 @@ export const useLibra = () => {
   // Workflow steps
   const [currentStep, setCurrentStep] = useState<"upload" | "ocr_edit" | "analyzed">("upload");
   const [ocrMode, setOcrMode] = useState<"local" | "ai">("ai");
-  const [viewMode, setViewMode] = useState<"analyzer" | "archive" | "search">("archive");
   const [sourceTab, setSourceTab] = useState<"doc" | "text">("doc");
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   // Roles, Search & Incidents
-  const [userRole, setUserRole] = useState<UserRole>("digital_secretary");
+  const [userRole, setUserRole] = useState<UserRole>("reader_user");
+  const [viewMode, setViewMode] = useState<"analyzer" | "archive" | "search">("search");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("libra_user_role");
+      if (saved) {
+        setUserRole(saved as UserRole);
+        if (saved === "digital_secretary" || saved === "court_secretary") {
+          setViewMode("archive");
+        } else {
+          setViewMode("search");
+        }
+      }
+    }
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedSearchCase, setSelectedSearchCase] = useState<string | null>(null);
@@ -370,10 +385,42 @@ export const useLibra = () => {
 
   useEffect(() => {
     fetchIncidents();
-    // Intentionally omitting searchCausas("") here to avoid state updates during render
-    // If needed, searchCausas("") should be invoked by a separate event or initialization
     fetchArchiveList();
+    if (userRole === "abogado") {
+      searchCausas("");
+    }
   }, [userRole]);
+
+  const loginAction = async (email: string, password: string) => {
+    try {
+      const user = await api.login(BACKEND_URL, email, password);
+      const role = user.role as UserRole;
+      setUserRole(role);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("libra_user_role", role);
+      }
+      resetWorkflow();
+      setShowIncidentsTab(false);
+      if (role === "digital_secretary" || role === "court_secretary") {
+        setViewMode("archive");
+      } else {
+        setViewMode("search");
+      }
+      setIsLoginOpen(false);
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
+  const logoutAction = () => {
+    setUserRole("reader_user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("libra_user_role");
+    }
+    resetWorkflow();
+    setShowIncidentsTab(false);
+    setViewMode("search");
+  };
 
   return {
     BACKEND_URL,
@@ -460,5 +507,9 @@ export const useLibra = () => {
     chatMessages,
     setChatMessages,
     isChatSending,
+    isLoginOpen,
+    setIsLoginOpen,
+    loginAction,
+    logoutAction,
   };
 };

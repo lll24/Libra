@@ -387,7 +387,11 @@ export const SearchView: React.FC<SearchViewProps> = ({
                             <span className="text-slate-400">Fecha de ingreso</span>
                             <span className="text-white">{selectedCausa.date || "14/03/2021"}</span>
                             <span className="text-slate-400">Número de folio</span>
-                            <span className="text-white">{String(selectedCausa.start_folio).padStart(3, '0')}</span>
+                            <span className="text-white">
+                              {selectedCausa.start_folio !== undefined && selectedCausa.start_folio !== null
+                                ? String(selectedCausa.start_folio).padStart(3, '0')
+                                : "001"}
+                            </span>
                             <span className="text-slate-400">Estado</span>
                             <span className="text-white">Registrado</span>
                           </div>
@@ -396,7 +400,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                           <div>
                             <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Actores Procesales</h4>
                             <div className="grid grid-cols-2 gap-y-2 text-xs">
-                              {searchAnalysisResult.entities.slice(0, 2).map((ent: any, i: number) => (
+                              {searchAnalysisResult.entities.map((ent: any, i: number) => (
                                 <React.Fragment key={i}>
                                   <span className="text-slate-400 capitalize">{ent.role}</span>
                                   <span className="text-white truncate" title={ent.name}>{ent.name}</span>
@@ -430,10 +434,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                          <div>
                             <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Acontecimientos Clave</h4>
                             <ul className="space-y-1.5">
-                              {searchAnalysisResult.key_points.slice(0, 3).map((point: string, idx: number) => (
+                              {searchAnalysisResult.key_points.map((point: string, idx: number) => (
                                 <li key={idx} className="flex gap-2 text-xs text-slate-300">
-                                  <span className="text-blue-500">•</span>
-                                  <span className="truncate">{point}</span>
+                                  <span className="text-blue-500 shrink-0">•</span>
+                                  <span>{point}</span>
                                 </li>
                               ))}
                             </ul>

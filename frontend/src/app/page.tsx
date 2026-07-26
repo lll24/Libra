@@ -3,12 +3,12 @@
 import { useLibra } from "../hooks/useLibra";
 import TopNavBar from "../components/TopNavBar";
 import { RoleWorkspace } from "../components/roles/RoleWorkspace";
+import { LoginModal } from "../components/LoginModal";
 
 export default function Home() {
   const state = useLibra();
   const {
     userRole,
-    setUserRole,
     viewMode,
     setViewMode,
     currentStep,
@@ -23,6 +23,10 @@ export default function Home() {
     setIncidentNote,
     setShowIncidentModal,
     submitIncident,
+    isLoginOpen,
+    setIsLoginOpen,
+    loginAction,
+    logoutAction,
   } = state;
 
   return (
@@ -34,7 +38,6 @@ export default function Home() {
       {/* Top Navigation Bar */}
       <TopNavBar
         userRole={userRole}
-        setUserRole={setUserRole}
         viewMode={viewMode}
         setViewMode={setViewMode}
         currentStep={currentStep}
@@ -43,6 +46,8 @@ export default function Home() {
         fetchArchiveList={fetchArchiveList}
         searchCausasAction={searchCausasAction}
         setError={setError}
+        setIsLoginOpen={setIsLoginOpen}
+        logoutAction={logoutAction}
       />
 
       <div className={userRole !== "reader_user" ? "w-full h-[calc(100vh-56px)]" : "max-w-[96%] mx-auto px-6 py-8"}>
@@ -97,6 +102,13 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Modal de Login */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onLoginSuccess={loginAction}
+      />
     </main>
   );
 }
