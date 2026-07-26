@@ -45,7 +45,7 @@ export default function Home() {
         setError={setError}
       />
 
-      <div className={userRole === "court_secretary" || (userRole === "digital_secretary" && viewMode === "analyzer") ? "w-full h-[calc(100vh-56px)]" : "max-w-[96%] mx-auto px-6 py-8"}>
+      <div className={userRole !== "reader_user" ? "w-full h-[calc(100vh-56px)]" : "max-w-[96%] mx-auto px-6 py-8"}>
         <RoleWorkspace state={state} />
 
         {showIncidentModal && selectedArchiveItem && (

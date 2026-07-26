@@ -57,5 +57,38 @@ button, input, textarea, select {
   .surface-panel {
     @apply bg-slate-950/60 border border-slate-800 rounded-xl;
   }
+
+  /* Neumorphism Classes */
+  .neu-base {
+    @apply bg-[#e2e8f0] shadow-[8px_8px_16px_#c5cbd2,-8px_-8px_16px_#ffffff];
+  }
+
+  .neu-base-sm {
+    @apply bg-[#e2e8f0] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff];
+  }
+
+  .neu-pressed {
+    @apply bg-[#e2e8f0] shadow-[inset_6px_6px_12px_#c5cbd2,inset_-6px_-6px_12px_#ffffff];
+  }
+
+  .neu-pressed-sm {
+    @apply bg-[#e2e8f0] shadow-[inset_4px_4px_8px_#c5cbd2,inset_-4px_-4px_8px_#ffffff];
+  }
+
+  .neu-pressed-xs {
+    @apply bg-[#e2e8f0] shadow-[inset_2px_2px_4px_#c5cbd2,inset_-2px_-2px_4px_#ffffff];
+  }
+
+  .neu-flat {
+    @apply bg-[#e2e8f0];
+  }
+
+  .neu-button-dark {
+    @apply bg-[#1e293b] text-white hover:bg-[#c5a66d] hover:text-slate-900 shadow-md transition-all;
+  }
+
+  .neu-button-gold {
+    @apply bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)] transition-all;
+  }
 }
 

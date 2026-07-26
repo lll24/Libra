@@ -3,6 +3,7 @@
 import { useLibra } from "../../../hooks/useLibra";
 import { AbogadoAnalyzerPanel } from "./AbogadoAnalyzerPanel";
 import { AbogadoSearchPanel } from "./AbogadoSearchPanel";
+import { AbogadoArchivePanel } from "./AbogadoArchivePanel";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
@@ -15,6 +16,10 @@ export const AbogadoView = ({ state }: AbogadoViewProps) => {
 
   if (viewMode === "search") {
     return <AbogadoSearchPanel state={state} />;
+  }
+
+  if (viewMode === "archive") {
+    return <AbogadoArchivePanel state={state} />;
   }
 
   return <AbogadoAnalyzerPanel state={state} />;

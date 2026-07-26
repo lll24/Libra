@@ -5,10 +5,10 @@ import { ArchiveView } from "../../ArchiveView";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
-interface DigitalSecretaryArchivePanelProps {
+interface AbogadoArchivePanelProps {
   state: LibraHookState;
 }
 
-export const DigitalSecretaryArchivePanel = ({ state }: DigitalSecretaryArchivePanelProps) => {
+export const AbogadoArchivePanel = ({ state }: AbogadoArchivePanelProps) => {
   return <ArchiveView state={state} />;
 };

@@ -202,7 +202,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
               onDrop={handleDrop}
               className={`relative rounded-xl transition-all duration-300 flex flex-col items-center justify-center py-10 group ${dragActive
                   ? "bg-blue-50/50 shadow-[inset_4px_4px_8px_#c5cbd2,inset_-4px_-4px_8px_#ffffff] border-2 border-dashed border-blue-400"
-                  : "bg-[#e2e8f0] shadow-[inset_4px_4px_8px_#c5cbd2,inset_-4px_-4px_8px_#ffffff] hover:shadow-[inset_6px_6px_12px_#c5cbd2,inset_-6px_-6px_12px_#ffffff] border-2 border-dashed border-slate-300/70"
+                  : "neu-pressed-sm hover:shadow-[inset_6px_6px_12px_#c5cbd2,inset_-6px_-6px_12px_#ffffff] border-2 border-dashed border-slate-300/70"
                 }`}
             >
               <input
@@ -215,7 +215,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
               <label htmlFor="file-upload" className="flex flex-col items-center cursor-pointer w-full h-full">
 
                 {/* SVG Minimalista */}
-                <div className="relative mb-4 transform group-hover:-translate-y-1 transition-transform duration-300 ease-out flex items-center justify-center w-14 h-14 rounded-full bg-[#e2e8f0] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] text-slate-500 group-hover:text-blue-500">
+                <div className="relative mb-4 transform group-hover:-translate-y-1 transition-transform duration-300 ease-out flex items-center justify-center w-14 h-14 rounded-full neu-base-sm text-slate-500 group-hover:text-blue-500">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 11v6m-3-3l3-3 3 3" />
@@ -338,12 +338,12 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow mx-auto min-h-0">
             {/* Columna Izquierda: Visor original */}
-            <div className="lg:col-span-5 bg-[#e2e8f0] shadow-[8px_8px_16px_#c5cbd2,-8px_-8px_16px_#ffffff] rounded-[24px] p-5 flex flex-col h-full min-h-0">
+            <div className="lg:col-span-5 neu-base rounded-[24px] p-5 flex flex-col h-full min-h-0">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Documento Escaneado</h3>
-                <span className="text-[9px] bg-[#e2e8f0] shadow-[inset_2px_2px_4px_#c5cbd2,inset_-2px_-2px_4px_#ffffff] text-slate-500 px-2 py-0.5 rounded font-semibold">Solo lectura</span>
+                <span className="text-[9px] neu-pressed-xs text-slate-500 px-2 py-0.5 rounded font-semibold">Solo lectura</span>
               </div>
-              <div className="flex-grow bg-[#e2e8f0] shadow-[inset_6px_6px_12px_#c5cbd2,inset_-6px_-6px_12px_#ffffff] rounded-xl overflow-auto flex items-start justify-center relative p-2">
+              <div className="flex-grow neu-pressed rounded-xl overflow-auto flex items-start justify-center relative p-2">
                 {fileUrl ? (
                   file?.type === "application/pdf" || file?.name.toLowerCase().endsWith(".pdf") ? (
                     <iframe
@@ -378,7 +378,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
 
                 {/* Controles de Zoom para imágenes */}
                 {fileUrl && !(file?.type === "application/pdf" || file?.name.toLowerCase().endsWith(".pdf")) && (
-                  <div className="absolute bottom-4 right-4 flex items-center gap-1 z-20 bg-[#e2e8f0] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] rounded-lg p-1.5 border border-slate-200/50">
+                  <div className="absolute bottom-4 right-4 flex items-center gap-1 z-20 neu-base-sm rounded-lg p-1.5 border border-slate-200/50">
                     <button
                       onClick={() => setImageZoom(prev => Math.max(prev - 0.25, 0.5))}
                       className="w-6 h-6 rounded bg-[#e2e8f0] text-slate-600 hover:text-slate-800 shadow-[inset_1px_1px_2px_#ffffff,inset_-1px_-1px_2px_#c5cbd2] active:shadow-[inset_2px_2px_4px_#c5cbd2,inset_-2px_-2px_4px_#ffffff] font-bold text-sm flex items-center justify-center transition-all"
@@ -402,7 +402,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
             </div>
 
             {/* Columna Derecha: Edición de texto */}
-            <div className="lg:col-span-7 bg-[#e2e8f0] shadow-[8px_8px_16px_#c5cbd2,-8px_-8px_16px_#ffffff] rounded-[24px] p-6 flex flex-col h-full min-h-0">
+            <div className="lg:col-span-7 neu-base rounded-[24px] p-6 flex flex-col h-full min-h-0">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">EDITOR OCR</h3>
                 <button
@@ -417,7 +417,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
               </div>
 
 
-              <div className="flex-grow w-full bg-[#e2e8f0] shadow-[inset_6px_6px_12px_#c5cbd2,inset_-6px_-6px_12px_#ffffff] rounded-xl p-5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
+              <div className="flex-grow w-full neu-pressed rounded-xl p-5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
                 {isEditingOcrText ? (
                   <textarea
                     value={rawText}
@@ -441,7 +441,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                   {onBackToArchive && (
                     <button
                       onClick={onBackToArchive}
-                      className="px-4 py-2.5 rounded-lg text-xs font-bold text-slate-500 bg-[#e2e8f0] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] hover:shadow-[inset_2px_2px_4px_#c5cbd2,inset_-2px_-2px_4px_#ffffff] transition-all"
+                      className="px-4 py-2.5 rounded-lg text-xs font-bold text-slate-500 neu-base-sm hover:shadow-[inset_2px_2px_4px_#c5cbd2,inset_-2px_-2px_4px_#ffffff] transition-all"
                     >
                       Volver al Archivero
                     </button>
