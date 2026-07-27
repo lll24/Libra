@@ -114,6 +114,15 @@ export const api = {
     }
   },
 
+  deleteArchiveItem: async (backendUrl: string, id: string): Promise<void> => {
+    const response = await fetch(`${backendUrl}/api/archive/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Error al eliminar el expediente.");
+    }
+  },
+
   searchCausas: async (backendUrl: string, query: string, role?: string): Promise<any[]> => {
     const roleParam = role ? `&role=${encodeURIComponent(role)}` : "";
     const response = await fetch(`${backendUrl}/api/search?q=${encodeURIComponent(query)}${roleParam}`);

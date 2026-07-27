@@ -34,6 +34,7 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
     analyzeArchiveItem,
     isAnalyzing,
     incidentsList,
+    deleteArchiveItemAction,
   } = state;
 
   const [collapsedGroups, setCollapsedGroups] = useState<{ [key: string]: boolean }>({});
@@ -44,6 +45,7 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
   
   // Nuevo estado para la vista de edición OCR completa
   const [isEditingExtraction, setIsEditingExtraction] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 
   const onStartOcr = () => {
     resetWorkflow();
@@ -261,13 +263,14 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
                 Los cambios se asociarán al expediente <strong className="text-slate-700">{selectedArchiveItem.case_number}</strong>
               </span>
               <button
-                onClick={() => {
-                  updateArchiveItemText();
+                onClick={async () => {
+                  await analyzeArchiveItem();
                   setIsEditingExtraction(false);
                 }}
-                className="neu-button-dark text-xs font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center gap-2"
+                disabled={isAnalyzing || !archiveItemText.trim()}
+                className="bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] disabled:opacity-50 text-xs font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center gap-2"
               >
-                Confirmar y Guardar 
+                {isAnalyzing ? "Analizando..." : "Guardar y Reanalizar"}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -414,12 +417,20 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
                   <span className="text-[9px] font-normal opacity-90">(Fallo OCR)</span>
                 </button>
               ) : (
-                <button
-                  onClick={() => setIsEditingExtraction(true)}
-                  className="bg-[#1e293b] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md hover:bg-[#c5a66d] hover:text-slate-900 transition-all"
-                >
-                  Editar Extracción
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditingExtraction(true)}
+                    className="bg-[#1e293b] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md hover:bg-[#c5a66d] hover:text-slate-900 transition-all"
+                  >
+                    Editar Expediente
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md transition-all active:scale-95"
+                  >
+                    Borrar Expediente
+                  </button>
+                </div>
               )}
             </div>
 
@@ -584,43 +595,66 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
                 Ocultar {">"}
               </button>
             </div>
-            
-            {userRole === "digital_secretary" ? (
-              <>
-                <textarea
-                  value={archiveItemText}
-                  onChange={(e) => setArchiveItemText(e.target.value)}
-                  className="flex-grow w-full bg-[#1e293b] border-none rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none shadow-[inset_4px_4px_8px_rgba(0,0,0,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.05)] leading-relaxed resize-none scrollbar-thin scrollbar-thumb-slate-600"
-                  placeholder="Cargando texto del archivo..."
-                />
-                <div className="mt-5 flex gap-3 justify-end shrink-0">
-                  <button
-                    onClick={updateArchiveItemText}
-                    disabled={isUpdatingArchiveText || archiveItemText === originalArchiveItemText}
-                    className="px-4 py-2.5 rounded-lg text-xs font-semibold neu-base-sm text-slate-700 hover:text-slate-900 active:neu-pressed-sm disabled:opacity-50 transition-all w-full"
-                  >
-                    {isUpdatingArchiveText ? "Guardando..." : "Guardar Borrador"}
-                  </button>
-                  <button
-                    onClick={analyzeArchiveItem}
-                    disabled={isAnalyzing || !archiveItemText.trim()}
-                    className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)] disabled:opacity-50 transition-all w-full"
-                  >
-                    {isAnalyzing ? "Analizando..." : "Re-Analizar y Validar"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 bg-[#1e293b] rounded-xl shadow-[inset_4px_4px_8px_rgba(0,0,0,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.05)] p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600">
-                <div className="w-full h-full text-[#e2e8f0] font-sans text-xs leading-relaxed p-1">
-                  {renderMarkdown(archiveItemText)}
-                </div>
+            <textarea
+              value={archiveItemText}
+              readOnly={true}
+              className="flex-grow w-full bg-[#1e293b] border-none rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none shadow-[inset_4px_4px_8px_rgba(0,0,0,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.05)] leading-relaxed resize-none scrollbar-thin scrollbar-thumb-slate-600"
+              placeholder="Cargando texto del archivo..."
+            />
+            {userRole === "digital_secretary" && (
+              <div className="mt-5 flex gap-3 justify-end shrink-0">
+                <button
+                  onClick={analyzeArchiveItem}
+                  disabled={isAnalyzing || !archiveItemText.trim()}
+                  className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)] disabled:opacity-50 transition-all w-full"
+                >
+                  {isAnalyzing ? "Analizando..." : "Re-Analizar y Validar"}
+                </button>
               </div>
             )}
 
           </div>
         )}
       </div>
+      )}
+
+{showDeleteModal && selectedArchiveItem && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          {/* Cambiado: bg-slate-900 -> bg-white, border-slate-800 -> border-gray-200 */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transition-colors">
+            
+            {/* Cambiado: text-white -> text-gray-900 */}
+            <h3 className="text-sm font-bold mb-2 text-gray-900 flex items-center gap-2">
+              🚨 Eliminar Expediente
+            </h3>
+            
+            {/* Cambiado: text-slate-300 -> text-gray-700 y fondo rojo aclarado (bg-red-50) */}
+            <p className="text-xs mb-6 text-gray-700 leading-relaxed font-bold uppercase tracking-wider text-center border border-red-500/20 bg-red-50 p-4 rounded-xl">
+              ¿Estás seguro de que quieres borrar este expediente?
+            </p>
+            
+            <div className="flex gap-4 justify-end items-center">
+              {/* Cambiado: text-slate-400 -> text-gray-500, hover:text-white -> hover:text-gray-900 */}
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Cancelar
+              </button>
+              
+              {/* El botón de confirmar se queda igual para mantener el rojo */}
+              <button
+                onClick={async () => {
+                  await deleteArchiveItemAction(selectedArchiveItem.id);
+                  setShowDeleteModal(false);
+                }}
+                className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 px-4 rounded-xl transition-all shadow-lg shadow-rose-600/30"
+              >
+                Confirmar Eliminación
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

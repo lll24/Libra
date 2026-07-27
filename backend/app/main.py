@@ -569,8 +569,40 @@ def login(request: LoginRequest):
         return user
     except HTTPException as he:
         raise he
+@app.delete("/api/archive/{filename_id}")
+def delete_archive_item(filename_id: str):
+    try:
+        from app.database import get_connection, release_connection
+        
+        # 1. Borrar de la base de datos
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM documents WHERE id = %s;", (filename_id,))
+                conn.commit()
+        except Exception as db_err:
+            conn.rollback()
+            print(f"Error al borrar de base de datos: {db_err}")
+            raise HTTPException(status_code=500, detail=f"Error en base de datos: {str(db_err)}")
+        finally:
+            release_connection(conn)
+            
+        # 2. Borrar archivos del servidor (ARCHIVE_DIR)
+        file_path = os.path.join(ARCHIVE_DIR, filename_id)
+        text_path = f"{file_path}.txt"
+        
+        deleted_files = []
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            deleted_files.append(file_path)
+            
+        if os.path.exists(text_path):
+            os.remove(text_path)
+            deleted_files.append(text_path)
+            
+        return {"status": "ok", "message": f"Expediente {filename_id} eliminado correctamente", "deleted_files": deleted_files}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error al eliminar expediente: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
