@@ -30,10 +30,10 @@ export default function Home() {
   } = state;
 
   return (
-    <main className="min-h-screen bg-[#090d16] text-[#e2e8f0] font-sans relative">
+    <main className="min-h-screen bg-[#f0f4f8] text-slate-800 font-sans relative">
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
 
       {/* Top Navigation Bar */}
       <TopNavBar

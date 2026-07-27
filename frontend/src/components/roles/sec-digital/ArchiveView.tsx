@@ -41,6 +41,7 @@ interface ArchiveViewProps {
   analyzeArchiveItem: () => void;
   isAnalyzing: boolean;
   onStartOcr?: () => void;
+  deleteArchiveItemAction: (id: string) => Promise<void>;
 }
 
 export const ArchiveView: React.FC<ArchiveViewProps> = ({
@@ -80,6 +81,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
   analyzeArchiveItem,
   isAnalyzing,
   onStartOcr,
+  deleteArchiveItemAction,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<{ [key: string]: boolean }>({});
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null);
@@ -89,6 +91,7 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
   
   // Nuevo estado para la vista de edición OCR completa
   const [isEditingExtraction, setIsEditingExtraction] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 
   // Helper to group and sort cases
   const getGroupedCases = () => {
@@ -230,13 +233,14 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                 Los cambios se asociarán al expediente <strong className="text-slate-800">{selectedArchiveItem.case_number}</strong>
               </span>
               <button
-                onClick={() => {
-                  updateArchiveItemText();
+                onClick={async () => {
+                  await analyzeArchiveItem();
                   setIsEditingExtraction(false);
                 }}
-                className="bg-[#1e293b] hover:bg-[#0f172a] text-white text-xs font-semibold py-2.5 px-6 rounded-lg shadow-md transition-colors flex items-center gap-2"
+                disabled={isAnalyzing || !archiveItemText.trim()}
+                className="bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] disabled:opacity-50 text-xs font-bold py-2.5 px-6 rounded-lg shadow-md transition-colors flex items-center gap-2"
               >
-                Confirmar y Guardar 
+                {isAnalyzing ? "Analizando..." : "Guardar y Reanalizar"}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -419,12 +423,20 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
                         Reportar Incidente
                       </button>
                     ) : (
-                      <button
-                        onClick={() => setIsEditingExtraction(true)}
-                        className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-colors border border-slate-700 shadow-sm"
-                      >
-                        Editar Extracción
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setIsEditingExtraction(true)}
+                          className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-colors border border-slate-700 shadow-sm"
+                        >
+                          Editar Expediente
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteModal(true)}
+                          className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all shadow-sm"
+                        >
+                          Borrar Expediente
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -582,30 +594,20 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
 
                   <textarea
                     value={archiveItemText}
-                    onChange={(e) => setArchiveItemText(e.target.value)}
-                    readOnly={userRole !== "digital_secretary"}
+                    readOnly={true}
                     className="flex-grow w-full bg-[#0a0f18] border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500/50 leading-relaxed resize-none scrollbar-thin scrollbar-thumb-slate-700"
                     placeholder="Cargando texto del archivo..."
                   />
 
                   <div className="mt-5 flex gap-3 justify-end shrink-0">
                     {userRole === "digital_secretary" && (
-                      <>
-                        <button
-                          onClick={updateArchiveItemText}
-                          disabled={isUpdatingArchiveText || archiveItemText === originalArchiveItemText}
-                          className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 disabled:opacity-40 transition-colors w-full"
-                        >
-                          {isUpdatingArchiveText ? "Guardando..." : "Guardar Borrador"}
-                        </button>
-                        <button
-                          onClick={analyzeArchiveItem}
-                          disabled={isAnalyzing || !archiveItemText.trim()}
-                          className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-md disabled:opacity-40 transition-colors w-full"
-                        >
-                          {isAnalyzing ? "Analizando..." : "Re-Analizar y Validar"}
-                        </button>
-                      </>
+                      <button
+                        onClick={analyzeArchiveItem}
+                        disabled={isAnalyzing || !archiveItemText.trim()}
+                        className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-md disabled:opacity-40 transition-colors w-full"
+                      >
+                        {isAnalyzing ? "Analizando..." : "Re-Analizar y Validar"}
+                      </button>
                     )}
                   </div>
                 </div>
@@ -630,7 +632,36 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
           )}
         </>
       )}
-      
+      {showDeleteModal && selectedArchiveItem && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transition-colors">
+            <h3 className="text-sm font-bold mb-2 text-white flex items-center gap-2">
+              🚨 Eliminar Expediente
+            </h3>
+            <p className="text-xs mb-6 text-slate-300 leading-relaxed font-bold uppercase tracking-wider text-center border border-red-500/20 bg-red-500/5 p-4 rounded-xl">
+              ESTAS SEGURO DE QUE QUIERES BORRAR ESSTE EXPEDIENTE
+            </p>
+            <div className="flex gap-4 justify-end items-center">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-xs font-bold text-slate-400 hover:text-white transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  await deleteArchiveItemAction(selectedArchiveItem.id);
+                  setShowDeleteModal(false);
+                }}
+                className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 px-4 rounded-xl transition-all shadow-lg shadow-rose-600/30"
+              >
+                Confirmar Eliminación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

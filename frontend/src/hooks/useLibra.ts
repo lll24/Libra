@@ -415,6 +415,22 @@ export const useLibra = () => {
     }
   };
 
+  const deleteArchiveItemAction = async (id: string) => {
+    try {
+      await api.deleteArchiveItem(BACKEND_URL, id);
+      if (selectedArchiveItem && selectedArchiveItem.id === id) {
+        setSelectedArchiveItem(null);
+        setArchiveItemText("");
+        setOriginalArchiveItemText("");
+      }
+      fetchArchiveList();
+      fetchIncidents();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Error al eliminar expediente.");
+    }
+  };
+
   const logoutAction = () => {
     setUserRole("reader_user");
     if (typeof window !== "undefined") {
@@ -491,6 +507,7 @@ export const useLibra = () => {
     selectArchiveItem,
     updateArchiveItemText,
     analyzeArchiveItem,
+    deleteArchiveItemAction,
     archiveList,
     isLoadingArchive,
     selectedArchiveItem,
@@ -509,6 +526,7 @@ export const useLibra = () => {
     setChatInput,
     chatMessages,
     setChatMessages,
+    isChatSending,
     isLoginOpen,
     setIsLoginOpen,
     loginAction,

@@ -463,14 +463,14 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                     <button
                       onClick={runAnalysis}
                       disabled={isAnalyzing || !rawText.trim()}
-                      className={`px-5 py-2.5 rounded-lg text-xs font-bold text-slate-100 transition-all flex items-center justify-center gap-2 shadow-[4px_4px_8px_#c5cbd2,-4px_-4px_8px_#ffffff] ${isAnalyzing || !rawText.trim()
-                          ? "bg-slate-400 cursor-not-allowed shadow-none"
-                          : "bg-gradient-to-r from-slate-700 to-slate-800 hover:from-[#c5ae73] hover:to-[#c5ae73] hover:text-[#0f172a] active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3)]"
+                      className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${isAnalyzing || !rawText.trim()
+                          ? "bg-slate-400 text-slate-100 cursor-not-allowed shadow-none"
+                          : "bg-[#c5a66d] text-slate-900 hover:bg-[#b0935d] shadow-md active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2)]"
                         }`}
                     >
                       {isAnalyzing ? (
                         <>
-                          <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin h-3.5 w-3.5 text-slate-900" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                           </svg>
@@ -478,7 +478,7 @@ export const AnalyzerView: React.FC<AnalyzerViewProps> = ({
                         </>
                       ) : (
                         <>
-                          Confirmar y Guardar
+                          Guardar y Reanalizar
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                           </svg>
