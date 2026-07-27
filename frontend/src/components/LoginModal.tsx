@@ -37,16 +37,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
-      <div className="relative w-full max-w-md mx-4 p-8 rounded-2xl border border-slate-800 bg-[#0d1527]/90 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
+      <div className="relative w-full max-w-md mx-4 p-8 rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
         {/* Glow decorativo */}
-        <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl pointer-events-none" />
 
         {/* Botón de cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -55,13 +55,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* Encabezado */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-full border border-slate-700/50 flex items-center justify-center mx-auto mb-3 bg-[#152347] shadow-inner">
+          <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center mx-auto mb-3 bg-slate-50 shadow-inner">
             <span className="text-xl">⚖️</span>
           </div>
-          <h3 className="text-lg font-black tracking-tight text-white">
+          <h3 className="text-lg font-black tracking-tight text-slate-800">
             Iniciar Sesión
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Ingresa tus credenciales del Poder Judicial
           </p>
         </div>
@@ -77,7 +77,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ejemplo@libra.gob"
-              className="w-full bg-[#0b1120] border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none transition-all"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all"
               required
             />
           </div>
@@ -91,13 +91,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-[#0b1120] border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none transition-all"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all"
               required
             />
           </div>
 
           {error && (
-            <div className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs leading-normal animate-shake">
+            <div className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 text-xs leading-normal animate-shake">
               ⚠️ {error}
             </div>
           )}
@@ -111,8 +111,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-slate-800/80 text-center">
-          <p className="text-[10px] text-slate-500 leading-normal">
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+          <p className="text-[10px] text-slate-400 leading-normal">
             El acceso de consulta general (Usuario Lector) no requiere credenciales.
           </p>
         </div>
