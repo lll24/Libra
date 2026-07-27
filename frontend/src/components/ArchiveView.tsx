@@ -618,37 +618,41 @@ export const ArchiveView = ({ state }: ArchiveViewProps) => {
       </div>
       )}
 
-{showDeleteModal && selectedArchiveItem && (
+      {showDeleteModal && selectedArchiveItem && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-          {/* Cambiado: bg-slate-900 -> bg-white, border-slate-800 -> border-gray-200 */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transition-colors">
+          <div className="neu-base border border-slate-50/50 rounded-[1.5rem] p-8 max-w-md w-full mx-4 shadow-[0_0_50px_rgba(255,255,255,0.4),10px_10px_30px_rgba(0,0,0,0.15)] transition-all">
             
-            {/* Cambiado: text-white -> text-gray-900 */}
-            <h3 className="text-sm font-bold mb-2 text-gray-900 flex items-center gap-2">
-              🚨 Eliminar Expediente
+            <h3 className="text-base font-bold mb-3 text-slate-800 flex items-center gap-2">
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Eliminar Expediente
             </h3>
             
-            {/* Cambiado: text-slate-300 -> text-gray-700 y fondo rojo aclarado (bg-red-50) */}
-            <p className="text-xs mb-6 text-gray-700 leading-relaxed font-bold uppercase tracking-wider text-center border border-red-500/20 bg-red-50 p-4 rounded-xl">
-              ¿Estás seguro de que quieres borrar este expediente?
-            </p>
+            <div className="text-xs mb-6 text-slate-500 leading-relaxed font-medium">
+              <p className="mb-4">
+                Estás a punto de eliminar el expediente <strong className="text-slate-700 font-mono">{selectedArchiveItem.case_number}</strong>.
+              </p>
+              <div className="neu-pressed p-4 rounded-xl text-center flex flex-col items-center justify-center">
+                <span className="font-bold text-rose-600 uppercase tracking-wider text-[10px] mb-1">Acción Irreversible</span>
+                <span className="text-slate-500 opacity-90 leading-snug">¿Estás seguro de que quieres borrar este expediente y todos sus documentos?</span>
+              </div>
+            </div>
             
-            <div className="flex gap-4 justify-end items-center">
-              {/* Cambiado: text-slate-400 -> text-gray-500, hover:text-white -> hover:text-gray-900 */}
+            <div className="flex gap-4 justify-end items-center mt-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors px-4 py-2"
               >
                 Cancelar
               </button>
               
-              {/* El botón de confirmar se queda igual para mantener el rojo */}
               <button
                 onClick={async () => {
                   await deleteArchiveItemAction(selectedArchiveItem.id);
                   setShowDeleteModal(false);
                 }}
-                className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 px-4 rounded-xl transition-all shadow-lg shadow-rose-600/30"
+                className="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all shadow-[4px_4px_10px_#c5cbd2,-4px_-4px_10px_#ffffff] active:shadow-[inset_2px_2px_5px_rgba(0,0,0,0.2)]"
               >
                 Confirmar Eliminación
               </button>
