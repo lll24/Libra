@@ -4,6 +4,7 @@ import { useLibra } from "../../../hooks/useLibra";
 import { AbogadoAnalyzerPanel } from "./AbogadoAnalyzerPanel";
 import { AbogadoSearchPanel } from "./AbogadoSearchPanel";
 import { AbogadoArchivePanel } from "./AbogadoArchivePanel";
+import { AbogadoThemeWrapper } from "./AbogadoThemeWrapper";
 
 type LibraHookState = ReturnType<typeof useLibra>;
 
@@ -14,13 +15,15 @@ interface AbogadoViewProps {
 export const AbogadoView = ({ state }: AbogadoViewProps) => {
   const { viewMode } = state;
 
-  if (viewMode === "search") {
-    return <AbogadoSearchPanel state={state} />;
-  }
+  const renderPanel = () => {
+    if (viewMode === "search") return <AbogadoSearchPanel state={state} />;
+    if (viewMode === "archive") return <AbogadoArchivePanel state={state} />;
+    return <AbogadoAnalyzerPanel state={state} />;
+  };
 
-  if (viewMode === "archive") {
-    return <AbogadoArchivePanel state={state} />;
-  }
-
-  return <AbogadoAnalyzerPanel state={state} />;
+  return (
+    <AbogadoThemeWrapper>
+      {renderPanel()}
+    </AbogadoThemeWrapper>
+  );
 };
